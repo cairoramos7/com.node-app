@@ -9,7 +9,8 @@ const container = require('./src/shared/container');
 // Importar dependências
 const IUserRepository = require('./src/domain/user/user.repository');
 const ConcreteUserRepository = require('./src/infrastructure/user/user.repository');
-const EmailService = require('./src/infrastructure/email.service');
+const IEmailService = require('./src/domain/services/email.service');
+const ConcreteEmailService = require('./src/infrastructure/services/email.service');
 const IPostRepository = require('./src/domain/post/post.repository');
 const ConcretePostRepository = require('./src/infrastructure/post/post.repository');
 
@@ -53,7 +54,18 @@ app.use(express.json());
 
 // Registrar dependências no container
 container.registerSingleton('userRepository', () => new ConcreteUserRepository());
-container.registerSingleton('emailService', () => new EmailService());
+container.registerSingleton('emailService', () => {
+  const emailConfig = {
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    secure: process.env.EMAIL_SECURE === 'true',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  };
+  return new ConcreteEmailService(emailConfig);
+});
 container.registerSingleton('postRepository', () => new ConcretePostRepository());
 
 // Registrar Use Cases de Usuário

@@ -1,53 +1,41 @@
-/**
- * @file RequestEmailUpdateUseCase
- * @description Use case for requesting an email update for a user.
- */
-
-const User = require("@src/domain/user/user.entity");
-const UserRepository = require("@src/domain/user/user.repository");
-const EmailService = require("@src/infrastructure/email.service");
+const User = require("../../../domain/user/user.entity");
+const IUserRepository = require("../../../domain/user/user.repository");
+const IEmailService = require("../../../domain/services/email.service");
+const crypto = require("crypto");
 
 class RequestEmailUpdateUseCase {
   /**
-   * @param {UserRepository} userRepository - The user repository.
-   * @param {EmailService} emailService - The email service.
+   * @param {IUserRepository} userRepository - The user repository.
+   * @param {IEmailService} emailService - The email service.
    */
   constructor(userRepository, emailService) {
-    if (!(userRepository instanceof UserRepository)) {
-      throw new Error("userRepository must be an instance of UserRepository");
-    }
     this.userRepository = userRepository;
     this.emailService = emailService; // Assuming EmailService is also an interface or a concrete class injected
   }
 
-  /**
-   * @param {string} userId - The ID of the user.
-   * @param {string} newEmail - The new email address.
-   * @returns {Promise<object>} A message indicating the request was sent.
-   * @throws {Error} If the user is not found or email format is invalid.
-   */
   async execute(userId, newEmail) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found.");
     }
 
-    // Basic email validation
-    if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
-      throw new Error("Invalid email format.");
+    if (user.email === newEmail) {
+      throw new Error("New email is the same as the current email.");
     }
 
-    // Generate a confirmation token (placeholder)
-    const confirmationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    // Generate a confirmation token
+    const confirmationToken = crypto.randomBytes(32).toString("hex");
+    const tokenExpiry = Date.now() + 3600000; // 1 hour from now
 
-    // Store new email and token temporarily (e.g., in user object or a temporary collection)
-    user.setPendingEmailUpdate(newEmail, confirmationToken);
+    user.requestEmailUpdate(newEmail, confirmationToken, tokenExpiry);
     await this.userRepository.save(user);
 
-    // Send confirmation email
-    await this.emailService.sendConfirmationEmail(newEmail, confirmationToken);
+    const subject = 'Confirmação de Atualização de E-mail';
+    const html = `<p>Por favor, clique no link a seguir para confirmar a atualização do seu e-mail: <a href="${process.env.FRONTEND_URL}/confirm-email-update?token=${confirmationToken}">Confirmar E-mail</a></p>`;
 
-    return { message: 'Email update requested. Please check your new email for confirmation.' };
+    await this.emailService.sendEmail(newEmail, subject, html);
+
+    return { success: true, message: "Email confirmation sent." };
   }
 }
 
