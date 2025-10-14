@@ -23,6 +23,15 @@ jest.mock("@src/presentation/auth/auth.middleware", () => {
   });
 });
 
+// Mock the EmailService
+jest.mock("@src/infrastructure/email.service", () => {
+  return jest.fn().mockImplementation(() => {
+    return {
+      sendConfirmationEmail: jest.fn().mockResolvedValue(true),
+    };
+  });
+});
+
 const app = require("@src/app"); // Import app after mocking the middleware
 
 let testUser;
@@ -101,5 +110,87 @@ describe("User Routes", () => {
 
     expect(res.statusCode).toEqual(400);
     expect(res.body).toHaveProperty("message");
+  });
+
+  it("should request an email update", async () => {
+    const newEmail = "newemail@example.com";
+    const res = await request(app)
+      .put(`/api/users/${testUser._id}/email/request-update`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ email: newEmail });
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty("message", "Confirmation email sent. Please check your inbox.");
+    const updatedUser = await UserModel.findById(testUser._id);
+    expect(updatedUser.pendingEmailUpdate).toBeDefined();
+    expect(updatedUser.pendingEmailUpdate.newEmail).toEqual(newEmail);
+  });
+
+  it("should return 400 if invalid email format is provided for update request", async () => {
+    const newEmail = "invalid-email";
+    const res = await request(app)
+      .put(`/api/users/${testUser._id}/email/request-update`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ email: newEmail });
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body).toHaveProperty("message", "Invalid email format.");
+  });
+
+  it("should return 400 if no email is provided for update request", async () => {
+    const res = await request(app)
+      .put(`/api/users/${testUser._id}/email/request-update`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({});
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body).toHaveProperty("message", "New email is required.");
+  });
+
+  it("should confirm an email update", async () => {
+    const newEmail = "confirmed@example.com";
+    // First, request an email update to get a token
+    const requestRes = await request(app)
+      .put(`/api/users/${testUser._id}/email/request-update`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ email: newEmail });
+
+    expect(requestRes.statusCode).toEqual(200);
+
+    const userAfterRequest = await UserModel.findById(testUser._id);
+    const token = userAfterRequest.pendingEmailUpdate.token;
+
+    // Then, confirm the email update with the token
+    const confirmRes = await request(app)
+      .put(`/api/users/${testUser._id}/email/confirm-update`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ token: token });
+
+    expect(confirmRes.statusCode).toEqual(200);
+    expect(confirmRes.body).toHaveProperty("message", "Email updated successfully.");
+
+    const updatedUser = await UserModel.findById(testUser._id);
+    expect(updatedUser.email).toEqual(newEmail);
+    expect(updatedUser.pendingEmailUpdate).toBeNull();
+  });
+
+  it("should return 400 if invalid token is provided for email confirmation", async () => {
+    const res = await request(app)
+      .put(`/api/users/${testUser._id}/email/confirm-update`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ token: "invalidtoken" });
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body).toHaveProperty("message", "Invalid or expired confirmation token.");
+  });
+
+  it("should return 400 if no token is provided for email confirmation", async () => {
+    const res = await request(app)
+      .put(`/api/users/${testUser._id}/email/confirm-update`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({});
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body).toHaveProperty("message", "Confirmation token is required.");
   });
 });

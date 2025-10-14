@@ -15,6 +15,14 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  pendingEmailUpdate: {
+    type: Object,
+    default: null,
+    _id: false,
+    newEmail: String,
+    token: String,
+    expires: Date,
+  },
 });
 
 UserSchema.pre('save', async function (next) {
