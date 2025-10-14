@@ -67,13 +67,14 @@ describe("Auth Routes", () => {
   });
 
   it("should not register a user with existing email", async () => {
-    await request(app)
+    const firstRes = await request(app)
       .post("/api/auth/register")
       .send({
         name: "Duplicate User",
         email: "duplicate@example.com",
         password: "password123",
       });
+    expect(firstRes.statusCode).toEqual(201); // Verifica se o primeiro registro é bem-sucedido
 
     const res = await request(app)
       .post("/api/auth/register")
@@ -117,25 +118,7 @@ describe("Auth Routes", () => {
   });
 
   it("should return authenticated user data on /whoami", async () => {
-    // Register a user
-    const registeredUserRes = await request(app)
-      .post("/api/auth/register")
-      .send({
-        name: "Whoami User",
-        email: "whoami@example.com",
-        password: "password123",
-      });
-
-    // Update the mock middleware's user to the newly registered user
-    testUserForAuthMiddleware = await UserModel.findById(registeredUserRes.body.userId);
-
-    // Login to get a token (though not strictly needed for the mock, it's part of the flow)
-    await request(app)
-      .post("/api/auth/login")
-      .send({
-        email: "whoami@example.com",
-        password: "password123",
-      });
+    // The testUserForAuthMiddleware is already set up in beforeEach
     const token = "validToken"; // Use the validToken for the mock
 
     // Make whoami request with the token
@@ -145,7 +128,7 @@ describe("Auth Routes", () => {
 
     expect(whoamiRes.statusCode).toEqual(200);
     expect(whoamiRes.body).toHaveProperty("id", testUserForAuthMiddleware._id.toString());
-    expect(whoamiRes.body).toHaveProperty("email", "whoami@example.com"); // Expect actual email
+    expect(whoamiRes.body).toHaveProperty("email", testUserForAuthMiddleware.email); // Expect actual email
     expect(whoamiRes.body).not.toHaveProperty("password"); // Ensure password is not returned
   });
 

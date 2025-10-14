@@ -4,7 +4,7 @@
  */
 
 const User = require("@src/domain/user/user.entity");
-const UserRepository = require("@src/domain/user/user.repository");
+const UserRepository = require("@src/infrastructure/user/user.repository");
 
 class UpdateUserNameUseCase {
   /**
@@ -28,10 +28,9 @@ class UpdateUserNameUseCase {
     if (!user) {
       throw new Error("User not found");
     }
-
     user.updateName(newName);
-    await this.userRepository.save(user);
-    return user;
+    const updatedUser = await this.userRepository.save(user);
+    return updatedUser;
   }
 }
 

@@ -4,7 +4,7 @@
  */
 
 const User = require("@src/domain/user/user.entity");
-const UserRepository = require("@src/domain/user/user.repository");
+const UserRepository = require("@src/infrastructure/user/user.repository");
 
 class ConfirmEmailUpdateUseCase {
   /**

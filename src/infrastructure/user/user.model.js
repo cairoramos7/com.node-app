@@ -16,12 +16,19 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   pendingEmailUpdate: {
-    type: Object,
-    default: null,
+    newEmail: {
+      type: String,
+      required: false,
+    },
+    token: {
+      type: String,
+      required: false,
+    },
+    expires: {
+      type: Date,
+      required: false,
+    },
     _id: false,
-    newEmail: String,
-    token: String,
-    expires: Date,
   },
 });
 

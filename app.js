@@ -18,6 +18,7 @@ const ConcretePostRepository = require('./src/infrastructure/post/post.repositor
 const UpdateUserNameUseCase = require('./src/application/usecases/user/UpdateUserNameUseCase');
 const RequestEmailUpdateUseCase = require('./src/application/usecases/user/RequestEmailUpdateUseCase');
 const ConfirmEmailUpdateUseCase = require('./src/application/usecases/user/ConfirmEmailUpdateUseCase');
+const UpdatePasswordUseCase = require('./src/application/usecases/user/UpdatePasswordUseCase');
 
 // Importar Use Cases de Autenticação
 const RegisterUserUseCase = require('./src/application/usecases/auth/RegisterUserUseCase');
@@ -72,6 +73,7 @@ container.registerSingleton('postRepository', () => new ConcretePostRepository()
 container.register('updateUserNameUseCase', (c) => new UpdateUserNameUseCase(c.resolve('userRepository')));
 container.register('requestEmailUpdateUseCase', (c) => new RequestEmailUpdateUseCase(c.resolve('userRepository'), c.resolve('emailService')));
 container.register('confirmEmailUpdateUseCase', (c) => new ConfirmEmailUpdateUseCase(c.resolve('userRepository')));
+container.register('updatePasswordUseCase', (c) => new UpdatePasswordUseCase(c.resolve('userRepository'), c.resolve('emailService')));
 
 // Registrar Use Cases de Autenticação
 container.register('registerUserUseCase', (c) => new RegisterUserUseCase(c.resolve('userRepository')));
@@ -89,7 +91,8 @@ container.register('deletePostUseCase', (c) => new DeletePostUseCase(c.resolve('
 container.register('userController', (c) => new UserController(
   c.resolve('updateUserNameUseCase'),
   c.resolve('requestEmailUpdateUseCase'),
-  c.resolve('confirmEmailUpdateUseCase')
+  c.resolve('confirmEmailUpdateUseCase'),
+  c.resolve('updatePasswordUseCase')
 ));
 
 container.register('authController', (c) => new AuthController(
@@ -111,4 +114,5 @@ app.use("/api/auth", authRoutes(container.resolve('authController')));
 app.use("/api/posts", postRoutes(container.resolve('postController')));
 app.use("/api/users", userRoutes(container.resolve('userController')));
 
+console.log("App initialized and exported."); // Add this line
 module.exports = app;

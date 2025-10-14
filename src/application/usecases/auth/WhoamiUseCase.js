@@ -4,15 +4,19 @@ class WhoamiUseCase {
   }
 
   async execute(userId) {
-    const user = await this.userRepository.findById(userId, { password: 0 });
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new Error("User not found");
     }
 
-    // user is already a plain object, and password is excluded by projection
-    const { _id, ...userWithoutId } = user;
-    return { id: _id.toString(), ...userWithoutId };
+    // Manually construct the user object to exclude the password and ensure id is a string
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      // Do not include password
+    };
   }
 }
 

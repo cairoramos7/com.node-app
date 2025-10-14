@@ -19,15 +19,20 @@ class RequestEmailUpdateUseCase {
       throw new Error("User not found.");
     }
 
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      throw new Error("Invalid email format.");
+    }
+
     if (user.email === newEmail) {
       throw new Error("New email is the same as the current email.");
     }
 
     // Generate a confirmation token
     const confirmationToken = crypto.randomBytes(32).toString("hex");
-    const tokenExpiry = Date.now() + 3600000; // 1 hour from now
 
-    user.requestEmailUpdate(newEmail, confirmationToken, tokenExpiry);
+    user.requestEmailUpdate(newEmail, confirmationToken);
     await this.userRepository.save(user);
 
     const subject = 'Confirmação de Atualização de E-mail';

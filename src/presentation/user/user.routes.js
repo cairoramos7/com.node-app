@@ -6,5 +6,6 @@ module.exports = (userController) => {
   router.put('/:id/name', auth, userController.updateUserName);
   router.put('/:id/email/request-update', auth, userController.requestEmailUpdate);
   router.put('/:id/email/confirm-update', auth, userController.confirmEmailUpdate);
+  router.put('/:id/password', auth, userController.updatePassword);
   return router;
 };

@@ -1,8 +1,9 @@
 class UserController {
-  constructor(updateUserNameUseCase, requestEmailUpdateUseCase, confirmEmailUpdateUseCase) {
+  constructor(updateUserNameUseCase, requestEmailUpdateUseCase, confirmEmailUpdateUseCase, updatePasswordUseCase) {
     this.updateUserNameUseCase = updateUserNameUseCase;
     this.requestEmailUpdateUseCase = requestEmailUpdateUseCase;
     this.confirmEmailUpdateUseCase = confirmEmailUpdateUseCase;
+    this.updatePasswordUseCase = updatePasswordUseCase;
   }
 
   updateUserName = async (req, res) => {
@@ -21,7 +22,7 @@ class UserController {
 
   requestEmailUpdate = async (req, res) => {
     try {
-      const userId = req.user.id; // Assuming req.user.id is set by auth middleware
+      const userId = req.params.id; // Using route parameter instead of auth user id
       const newEmail = req.body.email;
 
       if (!newEmail) {
@@ -37,7 +38,7 @@ class UserController {
 
   confirmEmailUpdate = async (req, res) => {
     try {
-      const userId = req.user.id; // Assuming req.user.id is set by auth middleware
+      const userId = req.params.id; // Using route parameter instead of auth user id
       const token = req.body.token;
 
       if (!token) {
@@ -46,6 +47,22 @@ class UserController {
 
       await this.confirmEmailUpdateUseCase.execute(userId, token);
       res.status(200).json({ message: "Email updated successfully." });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  };
+
+  updatePassword = async (req, res) => {
+    try {
+      const userId = req.params.id; // Using route parameter instead of auth user id
+      const { oldPassword, newPassword } = req.body;
+
+      if (!oldPassword || !newPassword) {
+        return res.status(400).json({ message: "Old password and new password are required." });
+      }
+
+      await this.updatePasswordUseCase.execute(userId, oldPassword, newPassword);
+      res.status(200).json({ message: "Password updated successfully." });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
