@@ -22,7 +22,7 @@ describe("UserRepository Integration Tests", () => {
   });
 
   it("should save a new user", async () => {
-    const userEntity = new User("dummyId", "Test User", "test@example.com", "password123");
+    const userEntity = new User(null, "Test User", "test@example.com", "password123");
     const savedUser = await userRepository.save(userEntity);
 
     expect(savedUser).toBeInstanceOf(User);

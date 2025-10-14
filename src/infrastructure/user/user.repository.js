@@ -2,6 +2,7 @@ const UserModel = require('./user.model');
 const IUserRepository = require('../../domain/user/user.repository');
 const User = require('../../domain/user/user.entity');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 
 class UserRepository extends IUserRepository {
   constructor() {
@@ -9,19 +10,18 @@ class UserRepository extends IUserRepository {
   }
 
   async save(userEntity) {
-    if (userEntity.id) { // If userEntity has an ID, it's an update
+    if (userEntity.id) { // If userEntity has an ID, it's an an update
       const updateData = {
         name: userEntity.name,
         email: userEntity.email,
+        password: userEntity.password,
+        pendingEmailUpdate: userEntity.pendingEmailUpdate,
+        pendingEmailUpdateToken: userEntity.pendingEmailUpdateToken,
+        emailUpdateTokenExpires: userEntity.emailUpdateTokenExpires,
       };
 
-      if (userEntity.pendingEmailUpdate === null) {
-        updateData.pendingEmailUpdate = null;
-      } else {
-        updateData.pendingEmailUpdate = userEntity.pendingEmailUpdate;
-      }
-
-      const updatedUserDoc = await UserModel.findByIdAndUpdate(userEntity.id, updateData, { new: true });
+      const updatedUserDoc = await UserModel.findByIdAndUpdate(new mongoose.Types.ObjectId(userEntity.id), updateData, { new: true });
+      console.log(`[UserRepository.save] updatedUserDoc after findByIdAndUpdate: ${JSON.stringify(updatedUserDoc)}`);
       if (!updatedUserDoc) {
         throw new Error("User not found for update");
       }
@@ -60,11 +60,11 @@ class UserRepository extends IUserRepository {
   }
 
   async findById(id, projection = {}) {
-    const user = await UserModel.findById(id, projection);
-    if (!user) return null;
-    if (Object.keys(projection).length > 0) {
-      return user.toObject(); // Return raw object if projection is used
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return null;
     }
+    const user = await UserModel.findById(new mongoose.Types.ObjectId(id), projection);
+    if (!user) return null;
     const userEntity = new User(user._id.toString(), user.name, user.email, user.password);
     if (user.pendingEmailUpdate && user.pendingEmailUpdate.newEmail && user.pendingEmailUpdate.token) {
       userEntity.setPendingEmailUpdate(user.pendingEmailUpdate.newEmail, user.pendingEmailUpdate.token);

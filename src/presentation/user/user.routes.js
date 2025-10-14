@@ -1,10 +1,10 @@
 const express = require('express');
-const { updateUserName, requestEmailUpdate, confirmEmailUpdate } = require('./user.controller');
 const auth = require('../../presentation/auth/auth.middleware');
 
-const router = express.Router();
-router.put('/:id/name', auth, updateUserName);
-router.put('/:id/email/request-update', auth, requestEmailUpdate);
-router.put('/:id/email/confirm-update', auth, confirmEmailUpdate);
-
-module.exports = router;
+module.exports = (userController) => {
+  const router = express.Router();
+  router.put('/:id/name', auth, userController.updateUserName);
+  router.put('/:id/email/request-update', auth, userController.requestEmailUpdate);
+  router.put('/:id/email/confirm-update', auth, userController.confirmEmailUpdate);
+  return router;
+};
