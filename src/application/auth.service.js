@@ -7,12 +7,12 @@ class AuthService {
     this.userRepository = userRepository;
   }
 
-  async register(email, password) {
+  async register(name, email, password) {
     let user = await this.userRepository.findByEmail(email);
     if (user) {
       throw new Error("User already exists");
     }
-    user = new User(null, email, password);
+    user = new User(null, name, email, password);
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }
@@ -30,6 +30,18 @@ class AuthService {
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
     return token;
+  }
+
+  async whoami(userId) {
+    const user = await this.userRepository.findById(userId, { password: 0 });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // user is already a plain object, and password is excluded by projection
+    const { _id, ...userWithoutId } = user;
+    return { id: _id.toString(), ...userWithoutId };
   }
 }
 

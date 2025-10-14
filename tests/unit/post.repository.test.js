@@ -9,10 +9,7 @@ describe("PostRepository Integration Tests", () => {
   let testUser;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI_TEST || "mongodb://localhost:27017/ddd-blog-test", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI_TEST || "mongodb://localhost:27017/ddd-blog-test");
     postRepository = new PostRepository();
 
     // Create a test user for posts

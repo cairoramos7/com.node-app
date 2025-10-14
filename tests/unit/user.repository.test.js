@@ -9,10 +9,7 @@ describe("UserRepository Integration Tests", () => {
 
   beforeAll(async () => {
     // Use an in-memory MongoDB for testing or a dedicated test database
-    await mongoose.connect(process.env.MONGO_URI_TEST || "mongodb://localhost:27017/ddd-blog-test", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI_TEST || "mongodb://localhost:27017/ddd-blog-test");
     userRepository = new UserRepository();
   });
 
@@ -25,7 +22,7 @@ describe("UserRepository Integration Tests", () => {
   });
 
   it("should save a new user", async () => {
-    const userEntity = new User("dummyId", "test@example.com", "password123");
+    const userEntity = new User("dummyId", "Test User", "test@example.com", "password123");
     const savedUser = await userRepository.save(userEntity);
 
     expect(savedUser).toBeInstanceOf(User);

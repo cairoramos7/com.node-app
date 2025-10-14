@@ -11,4 +11,5 @@ module.exports = {
   },
   moduleDirectories: ["node_modules", "<rootDir>"],
   setupFiles: ["dotenv/config"], // Load dotenv before tests run
+  setupFilesAfterEnv: ["<rootDir>/tests/jest.setup.js"],
 };
