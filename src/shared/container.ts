@@ -3,10 +3,12 @@
  * @description Simple Dependency Injection Container.
  */
 
-type FactoryFunction<T> = (container: Container) => T;
+// type FactoryFunction<T> = (container: Container) => T; // Inline this simple type
+
+export type ServiceFactory<T> = (container: Container) => T;
 
 class Container {
-    private dependencies: Record<string, FactoryFunction<any>> = {};
+    private dependencies: Record<string, ServiceFactory<any>> = {};
     private singletons: Record<string, any> = {};
 
     /**
@@ -14,7 +16,7 @@ class Container {
      * @param {string} name - The name of the dependency.
      * @param {Function} factory - The factory function that creates the dependency.
      */
-    register<T>(name: string, factory: FactoryFunction<T>): void {
+    register<T>(name: string, factory: ServiceFactory<T>): void {
         this.dependencies[name] = factory;
     }
 
@@ -23,7 +25,7 @@ class Container {
      * @param {string} name - The name of the dependency.
      * @param {Function} factory - The factory function that creates the singleton instance.
      */
-    registerSingleton<T>(name: string, factory: FactoryFunction<T>): void {
+    registerSingleton<T>(name: string, factory: ServiceFactory<T>): void {
         this.dependencies[name] = () => {
             if (!this.singletons[name]) {
                 this.singletons[name] = factory(this);
