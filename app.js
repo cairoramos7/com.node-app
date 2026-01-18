@@ -1,59 +1,91 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require("dotenv");
-const connectDB = require("./src/infrastructure/database/mongodb");
+const dotenv = require('dotenv');
+const connectDB = require('./src/infrastructure/database/mongodb');
 
-// Importar o container de DI
+// Import Swagger configuration
+const { setupSwagger } = require('./src/presentation/swagger');
+
+// Import error handler
+const errorHandler = require('./src/presentation/middlewares/errorHandler');
+
+// Import DI container
 const container = require('./src/shared/container');
 
-// Importar dependências
-const IUserRepository = require('./src/domain/user/user.repository');
+// Import concrete implementations
 const ConcreteUserRepository = require('./src/infrastructure/user/user.repository');
-const IEmailService = require('./src/domain/services/email.service');
 const ConcreteEmailService = require('./src/infrastructure/services/email.service');
-const IPostRepository = require('./src/domain/post/post.repository');
 const ConcretePostRepository = require('./src/infrastructure/post/post.repository');
 
-// Importar Use Cases de Usuário
+// Import User Use Cases
 const UpdateUserNameUseCase = require('./src/application/usecases/user/UpdateUserNameUseCase');
 const RequestEmailUpdateUseCase = require('./src/application/usecases/user/RequestEmailUpdateUseCase');
 const ConfirmEmailUpdateUseCase = require('./src/application/usecases/user/ConfirmEmailUpdateUseCase');
 const UpdatePasswordUseCase = require('./src/application/usecases/user/UpdatePasswordUseCase');
 
-// Importar Use Cases de Autenticação
+// Import Auth Use Cases
 const RegisterUserUseCase = require('./src/application/usecases/auth/RegisterUserUseCase');
 const LoginUserUseCase = require('./src/application/usecases/auth/LoginUserUseCase');
 const WhoamiUseCase = require('./src/application/usecases/auth/WhoamiUseCase');
 
-// Importar Use Cases de Post
+// Import Post Use Cases
 const CreatePostUseCase = require('./src/application/usecases/post/CreatePostUseCase');
 const GetPostByIdUseCase = require('./src/application/usecases/post/GetPostByIdUseCase');
 const GetAllPostsUseCase = require('./src/application/usecases/post/GetAllPostsUseCase');
 const UpdatePostUseCase = require('./src/application/usecases/post/UpdatePostUseCase');
 const DeletePostUseCase = require('./src/application/usecases/post/DeletePostUseCase');
 
-// Importar Controladores
+// Import Controllers
 const UserController = require('./src/presentation/user/user.controller');
 const AuthController = require('./src/presentation/auth/auth.controller');
 const PostController = require('./src/presentation/post/post.controller');
 
-// Importar Rotas
-const authRoutes = require("./src/presentation/auth/auth.routes");
-const postRoutes = require("./src/presentation/post/post.routes");
-const userRoutes = require("./src/presentation/user/user.routes");
-
+// Import Routes
+const authRoutes = require('./src/presentation/auth/auth.routes');
+const postRoutes = require('./src/presentation/post/post.routes');
+const userRoutes = require('./src/presentation/user/user.routes');
 
 dotenv.config({ path: './.env.local' });
 
 const app = express();
 
-// Conectar ao Banco de Dados
+// Connect to Database
 connectDB();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Registrar dependências no container
+// Setup Swagger Documentation
+setupSwagger(app);
+
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check endpoint
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: API is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string, example: 'OK' }
+ *                 timestamp: { type: string, format: date-time }
+ */
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'OK',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Register dependencies in container
 container.registerSingleton('userRepository', () => new ConcreteUserRepository());
 container.registerSingleton('emailService', () => {
   const emailConfig = {
@@ -69,50 +101,97 @@ container.registerSingleton('emailService', () => {
 });
 container.registerSingleton('postRepository', () => new ConcretePostRepository());
 
-// Registrar Use Cases de Usuário
-container.register('updateUserNameUseCase', (c) => new UpdateUserNameUseCase(c.resolve('userRepository')));
-container.register('requestEmailUpdateUseCase', (c) => new RequestEmailUpdateUseCase(c.resolve('userRepository'), c.resolve('emailService')));
-container.register('confirmEmailUpdateUseCase', (c) => new ConfirmEmailUpdateUseCase(c.resolve('userRepository')));
-container.register('updatePasswordUseCase', (c) => new UpdatePasswordUseCase(c.resolve('userRepository'), c.resolve('emailService')));
+// Register User Use Cases
+container.register(
+  'updateUserNameUseCase',
+  (c) => new UpdateUserNameUseCase(c.resolve('userRepository'))
+);
+container.register(
+  'requestEmailUpdateUseCase',
+  (c) => new RequestEmailUpdateUseCase(c.resolve('userRepository'), c.resolve('emailService'))
+);
+container.register(
+  'confirmEmailUpdateUseCase',
+  (c) => new ConfirmEmailUpdateUseCase(c.resolve('userRepository'))
+);
+container.register(
+  'updatePasswordUseCase',
+  (c) => new UpdatePasswordUseCase(c.resolve('userRepository'), c.resolve('emailService'))
+);
 
-// Registrar Use Cases de Autenticação
-container.register('registerUserUseCase', (c) => new RegisterUserUseCase(c.resolve('userRepository')));
+// Register Auth Use Cases
+container.register(
+  'registerUserUseCase',
+  (c) => new RegisterUserUseCase(c.resolve('userRepository'))
+);
 container.register('loginUserUseCase', (c) => new LoginUserUseCase(c.resolve('userRepository')));
 container.register('whoamiUseCase', (c) => new WhoamiUseCase(c.resolve('userRepository')));
 
-// Registrar Use Cases de Post
+// Register Post Use Cases
 container.register('createPostUseCase', (c) => new CreatePostUseCase(c.resolve('postRepository')));
-container.register('getPostByIdUseCase', (c) => new GetPostByIdUseCase(c.resolve('postRepository')));
-container.register('getAllPostsUseCase', (c) => new GetAllPostsUseCase(c.resolve('postRepository')));
+container.register(
+  'getPostByIdUseCase',
+  (c) => new GetPostByIdUseCase(c.resolve('postRepository'))
+);
+container.register(
+  'getAllPostsUseCase',
+  (c) => new GetAllPostsUseCase(c.resolve('postRepository'))
+);
 container.register('updatePostUseCase', (c) => new UpdatePostUseCase(c.resolve('postRepository')));
 container.register('deletePostUseCase', (c) => new DeletePostUseCase(c.resolve('postRepository')));
 
-// Registrar controladores
-container.register('userController', (c) => new UserController(
-  c.resolve('updateUserNameUseCase'),
-  c.resolve('requestEmailUpdateUseCase'),
-  c.resolve('confirmEmailUpdateUseCase'),
-  c.resolve('updatePasswordUseCase')
-));
+// Register controllers
+container.register(
+  'userController',
+  (c) =>
+    new UserController(
+      c.resolve('updateUserNameUseCase'),
+      c.resolve('requestEmailUpdateUseCase'),
+      c.resolve('confirmEmailUpdateUseCase'),
+      c.resolve('updatePasswordUseCase')
+    )
+);
 
-container.register('authController', (c) => new AuthController(
-  c.resolve('registerUserUseCase'),
-  c.resolve('loginUserUseCase'),
-  c.resolve('whoamiUseCase')
-));
+container.register(
+  'authController',
+  (c) =>
+    new AuthController(
+      c.resolve('registerUserUseCase'),
+      c.resolve('loginUserUseCase'),
+      c.resolve('whoamiUseCase')
+    )
+);
 
-container.register('postController', (c) => new PostController(
-  c.resolve('createPostUseCase'),
-  c.resolve('getPostByIdUseCase'),
-  c.resolve('getAllPostsUseCase'),
-  c.resolve('updatePostUseCase'),
-  c.resolve('deletePostUseCase')
-));
+container.register(
+  'postController',
+  (c) =>
+    new PostController(
+      c.resolve('createPostUseCase'),
+      c.resolve('getPostByIdUseCase'),
+      c.resolve('getAllPostsUseCase'),
+      c.resolve('updatePostUseCase'),
+      c.resolve('deletePostUseCase')
+    )
+);
 
-// Definir Rotas
-app.use("/api/auth", authRoutes(container.resolve('authController')));
-app.use("/api/posts", postRoutes(container.resolve('postController')));
-app.use("/api/users", userRoutes(container.resolve('userController')));
+// Define Routes
+app.use('/api/auth', authRoutes(container.resolve('authController')));
+app.use('/api/posts', postRoutes(container.resolve('postController')));
+app.use('/api/users', userRoutes(container.resolve('userController')));
 
-console.log("App initialized and exported."); // Add this line
+// 404 handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      code: 'NOT_FOUND',
+      message: `Route ${req.method} ${req.originalUrl} not found`,
+    },
+  });
+});
+
+// Global error handler (must be last)
+app.use(errorHandler);
+
+console.log('App initialized and exported.');
 module.exports = app;
