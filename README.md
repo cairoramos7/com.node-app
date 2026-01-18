@@ -1,91 +1,97 @@
 # DDD Node Application
 
-This is a blog application project developed with Node.js, following Domain-Driven Design (DDD) principles. The goal is to demonstrate a clean and organized architecture with a clear separation of concerns between the domain, application, infrastructure, and presentation layers.
+[![CI](https://github.com/your-username/ddd-blog-app/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/ddd-blog-app/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+
+A blog application built with Node.js following **Domain-Driven Design (DDD)** principles. This project demonstrates clean architecture with a clear separation of concerns between domain, application, infrastructure, and presentation layers.
 
 ## Features
 
-*   **User Authentication**: Register, login, logout, and session management with JWT.
-*   **User Management**: Create, read, update, and delete user profiles.
-*   **Post Management**: Create, read, update, and delete blog posts.
-*   **Comments**: Add and manage comments on posts (feature to be implemented).
-*   **Data Validation**: Robust input data validation using Joi.
-*   **Data Persistence**: MongoDB integration using Mongoose.
-*   **Comprehensive Testing**: Unit and integration tests to ensure code quality.
+- **User Authentication**: Register, login, logout, and session management with JWT
+- **User Management**: Create, read, update, and delete user profiles
+- **Post Management**: Full CRUD operations for blog posts with tagging support
+- **API Documentation**: Interactive Swagger UI at `/api-docs`
+- **Data Validation**: Robust input validation using Joi
+- **Data Persistence**: MongoDB integration using Mongoose
+- **Comprehensive Testing**: Unit and integration tests with Jest
+- **CI/CD**: Automated testing and linting with GitHub Actions
+- **Docker Support**: Multi-stage Docker builds for production deployment
 
 ## Technologies Used
 
-*   **Node.js**: JavaScript runtime environment.
-*   **Express.js**: Web framework for Node.js.
-*   **MongoDB**: NoSQL database.
-*   **Mongoose**: ODM (Object Data Modeling) for MongoDB and Node.js.
-*   **TypeScript**: Programming language that adds static typing to JavaScript.
-*   **Joi**: For data schema validation.
-*   **JWT (JSON Web Tokens)**: For authentication and authorization.
-*   **Bcrypt**: For password hashing.
-*   **Jest**: JavaScript testing framework.
-*   **Supertest**: For testing HTTP routes.
-*   **Docker**: For application and database containerization.
-*   **ESLint**: For code linting.
-*   **Prettier**: For automatic code formatting.
+| Category             | Technologies                  |
+| -------------------- | ----------------------------- |
+| **Runtime**          | Node.js 18+                   |
+| **Framework**        | Express.js 5                  |
+| **Database**         | MongoDB with Mongoose         |
+| **Authentication**   | JWT (JSON Web Tokens), Bcrypt |
+| **Validation**       | Joi                           |
+| **Documentation**    | Swagger/OpenAPI               |
+| **Testing**          | Jest, Supertest               |
+| **Code Quality**     | ESLint, Prettier              |
+| **Package Manager**  | pnpm                          |
+| **Containerization** | Docker, Docker Compose        |
 
 ## Architecture
 
-The application follows Domain-Driven Design (DDD) principles, organized into the following layers:
+The application follows Domain-Driven Design (DDD) principles:
 
-*   **`src/domain/`**: Contains the core business logic, entities, aggregates, repositories, and domain services. It is the heart of the application and independent of any technology.
-    *   `post/`: Post-related entities and repositories.
-    *   `user/`: User-related entities and repositories.
-    *   `services/`: Interfaces for domain services (e.g., `EmailService`).
-*   **`src/application/`**: Orchestrates domain operations to execute use cases. It contains application services that coordinate interactions between the domain and infrastructure.
-    *   `usecases/`: Use case implementations (e.g., `CreateUserUseCase`, `UpdateUserNameUseCase`).
-*   **`src/infrastructure/`**: Handles technical details such as data persistence, communication with external services, and frameworks.
-    *   `database/`: Database configuration and connection (MongoDB).
-    *   `post/`: Post repository implementations (e.g., `MongoDBPostRepository`).
-    *   `user/`: User repository implementations (e.g., `MongoDBUserRepository`).
-    *   `services/`: External service implementations (e.g., `NodemailerEmailService`).
-*   **`src/presentation/`**: Contains the user interface or APIs. It is responsible for translating user requests into commands for the application layer and presenting the results.
-    *   `auth/`: Authentication routes and controllers.
-    *   `post/`: Post routes and controllers.
-    *   `user/`: User routes and controllers.
-*   **`src/shared/`**: Contains elements shared between layers, such as dependency injection.
-    *   `container.js`: Dependency injection container configuration.
+```
+src/
+├── domain/           # Core business logic (entities, repositories interfaces)
+│   ├── post/         # Post entity and repository interface
+│   ├── user/         # User entity and repository interface
+│   └── services/     # Domain service interfaces
+├── application/      # Use cases (orchestrates domain operations)
+│   └── usecases/     # CreatePost, UpdateUser, etc.
+├── infrastructure/   # Technical implementations
+│   ├── database/     # MongoDB connection
+│   ├── post/         # Post repository implementation
+│   ├── user/         # User repository implementation
+│   └── services/     # Email service implementation
+├── presentation/     # HTTP layer (routes, controllers)
+│   ├── auth/         # Authentication endpoints
+│   ├── post/         # Post endpoints
+│   ├── user/         # User endpoints
+│   └── middlewares/  # Error handling, validation
+└── shared/           # Shared utilities
+    ├── container.js  # Dependency injection
+    └── errors/       # Custom error classes
+```
 
 ## Getting Started
 
-Follow these instructions to set up and run the project locally.
-
 ### Prerequisites
 
-Make sure you have the following installed:
-
-*   Node.js (version 18 or higher)
-*   npm or Yarn (preferably Yarn)
-*   Docker and Docker Compose (to run MongoDB)
+- **Node.js** 18.0.0 or higher
+- **pnpm** (recommended) or npm
+- **Docker** and Docker Compose (for MongoDB)
 
 ### Installation
 
-1.  Clone the repository:
+1. Clone the repository:
 
-    ```bash
-    git clone https://github.com/your-username/ddd-blog-app.git
-    cd ddd-blog-app
-    ```
+   ```bash
+   git clone https://github.com/your-username/ddd-blog-app.git
+   cd ddd-blog-app
+   ```
 
-2.  Install dependencies:
+2. Install dependencies:
 
-    ```bash
-    yarn install
-    ```
+   ```bash
+   pnpm install
+   ```
 
 ### Environment Variables
 
-Create a `.env` file in the project root based on `.env.example` and fill in the necessary variables:
+Create a `.env.local` file based on `.env.example`:
 
-```
+```env
 NODE_ENV=development
 PORT=3000
 MONGO_URI=mongodb://localhost:27017/ddd-blog
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=your_jwt_secret_here
 JWT_EXPIRES_IN=1d
 REFRESH_TOKEN_SECRET=your_refresh_token_secret
 REFRESH_TOKEN_EXPIRES_IN=7d
@@ -96,59 +102,85 @@ EMAIL_PASS=your_mailtrap_password
 EMAIL_FROM=noreply@ddd-blog.com
 ```
 
-### Running with Docker Compose
+## Running the Application
 
-To start MongoDB and the application using Docker Compose:
+### Development Mode
+
+Start MongoDB and run the application with hot-reload:
+
+```bash
+# Start MongoDB
+docker-compose up mongodb -d
+
+# Start the application in development mode
+pnpm dev
+```
+
+### Production Mode
+
+Build and run with Docker Compose:
 
 ```bash
 docker-compose up --build
 ```
 
-The application will be available at `http://localhost:3000`.
+The application will be available at:
 
+- **API**: `http://localhost:3000`
+- **Swagger UI**: `http://localhost:3000/api-docs`
+- **Health Check**: `http://localhost:3000/api/health`
 
+## API Documentation
 
+Interactive API documentation is available at `/api-docs` when the server is running.
 
-## How to Run the Application
+### Main Endpoints
 
-### Development Mode
-
-To start the application in development mode (with `nodemon` for automatic reloading):
-
-```bash
-yarn dev
-```
-
-### Production Mode
-
-To compile and start the application in production mode:
-
-```bash
-yarn build
-yarn start
-```
-
-The application will be available at `http://localhost:3000` (or the port configured in your environment variables).
+| Method | Endpoint              | Description             |
+| ------ | --------------------- | ----------------------- |
+| POST   | `/api/auth/register`  | Register a new user     |
+| POST   | `/api/auth/login`     | Login and get JWT token |
+| GET    | `/api/auth/whoami`    | Get current user info   |
+| GET    | `/api/posts`          | List all posts          |
+| POST   | `/api/posts`          | Create a new post       |
+| GET    | `/api/posts/:id`      | Get post by ID          |
+| PUT    | `/api/posts/:id`      | Update a post           |
+| DELETE | `/api/posts/:id`      | Delete a post           |
+| PUT    | `/api/users/name`     | Update user name        |
+| PUT    | `/api/users/password` | Update password         |
 
 ## Running Tests
 
-To run unit and integration tests:
-
 ```bash
-yarn test
+# Run all tests
+pnpm test
+
+# Run tests with coverage
+pnpm test:cov
+
+# Run tests in watch mode (development)
+pnpm test -- --watch
 ```
 
-**Note**: If you encounter shared state issues between tests, run them sequentially:
+## Code Quality
 
 ```bash
-yarn test --runInBand
+# Run ESLint
+pnpm lint
+
+# Fix ESLint issues automatically
+pnpm lint:fix
+
+# Check Prettier formatting
+pnpm format:check
+
+# Format code with Prettier
+pnpm format
 ```
 
 ## Commit Message Guidelines
 
-All commit messages must follow the Conventional Commits format.
-
-### Format
+This project follows [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 <type>: <description>
@@ -160,49 +192,41 @@ All commit messages must follow the Conventional Commits format.
 
 ### Types
 
-*   **feat**: New feature
-*   **fix**: Bug fix
-*   **docs**: Documentation changes
-*   **style**: Code style changes (formatting, etc.)
-*   **refactor**: Code refactoring
-*   **test**: Adding or modifying tests
-*   **chore**: Maintenance tasks, dependency updates
+| Type       | Description                     |
+| ---------- | ------------------------------- |
+| `feat`     | New feature                     |
+| `fix`      | Bug fix                         |
+| `docs`     | Documentation changes           |
+| `style`    | Code style changes (formatting) |
+| `refactor` | Code refactoring                |
+| `test`     | Adding or modifying tests       |
+| `chore`    | Maintenance tasks               |
 
-### Description Rules
+### Examples
 
-*   Use imperative mood ("fix bug" not "fixed bug" or "fixes bug")
-*   First letter lowercase
-*   No period at the end
-*   Maximum 72 characters for the first line
-
-### Body (Optional)
-
-*   Use if more context is needed
-*   Explain what and why, not how
-*   Wrap at 72 characters
-*   Use bullet points for multiple changes
-
-### Good Commit Examples
-
-```
-fix: correct findOne method signature in resolver
-
-- Remove managerId parameter from findOne function
-- Align service call to use only id parameter
-- Fix typos and formatting issues
-```
-
-```
+```bash
 feat: add user authentication middleware
-
-- Implement JWT token validation
-- Add role-based access control
-- Create authentication service
+fix: correct password validation in login
+docs: update API documentation
+chore: upgrade dependencies
 ```
 
-### Important Notes
+## Project Structure
 
-*   **No namespaces** (avoid patterns like `fix(docs):`)
-*   Keep messages concise but descriptive
-*   Focus on the change, not the process
-*   Reference issues/tickets in footer if needed
+```
+.
+├── .github/workflows/   # CI/CD configuration
+├── src/                 # Source code (DDD layers)
+├── tests/               # Test files
+│   ├── integration/     # Integration tests
+│   └── unit/            # Unit tests
+├── app.js               # Express app configuration
+├── server.js            # Server entry point
+├── docker-compose.yml   # Docker services configuration
+├── Dockerfile           # Production Docker image
+└── package.json         # Project dependencies
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
