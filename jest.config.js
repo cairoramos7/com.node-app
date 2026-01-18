@@ -1,12 +1,15 @@
 module.exports = {
+  preset: 'ts-jest',
   testEnvironment: 'node',
-  testPathIgnorePatterns: ['/node_modules/'],
-  testMatch: ['**/tests/unit/**/*.test.js', '**/tests/integration/**/*.test.js'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  testMatch: ['**/tests/**/*.test.ts'],
   moduleNameMapper: {
-    '^@src/app$': '<rootDir>/app.js',
+    '^@src/app$': '<rootDir>/src/app.ts',
     '^@src/(.*)$': '<rootDir>/src/$1',
   },
   moduleDirectories: ['node_modules', '<rootDir>'],
-  setupFiles: ['dotenv/config'], // Load dotenv before tests run
+  setupFiles: ['dotenv/config'],
   setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
+  globalSetup: '<rootDir>/jest.global-setup.js',
+  globalTeardown: '<rootDir>/jest.global-teardown.js',
 };

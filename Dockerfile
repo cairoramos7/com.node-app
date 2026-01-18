@@ -9,11 +9,14 @@ WORKDIR /app
 # Copy package files
 COPY package.json pnpm-lock.yaml* ./
 
-# Install dependencies
+# Install dependencies (including devDependencies for build)
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
+
+# Build TypeScript to dist
+RUN pnpm build
 
 # Production stage
 FROM node:20-alpine AS production
@@ -27,14 +30,14 @@ WORKDIR /app
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Copy package files and install production dependencies only
+# Copy package files
 COPY package.json pnpm-lock.yaml* ./
+
+# Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy source code from builder
-COPY --from=builder /app/src ./src
-COPY --from=builder /app/app.js ./
-COPY --from=builder /app/server.js ./
+# Copy built artifacts from builder
+COPY --from=builder /app/dist ./dist
 
 # Change ownership to non-root user
 RUN chown -R nodejs:nodejs /app
@@ -49,4 +52,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
 # Start the application
-CMD ["pnpm", "start"]
+CMD ["node", "dist/server.js"]
