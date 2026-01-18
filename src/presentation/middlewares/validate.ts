@@ -17,23 +17,23 @@ type ValidationSource = 'body' | 'query' | 'params';
  * @returns {RequestHandler}
  */
 const validate = (schema: Joi.Schema, source: ValidationSource = 'body'): RequestHandler => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const dataToValidate = req[source];
+    return (req: Request, res: Response, next: NextFunction) => {
+        const dataToValidate = req[source];
 
-    const { error, value } = schema.validate(dataToValidate, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
+        const { error, value } = schema.validate(dataToValidate, {
+            abortEarly: false,
+            stripUnknown: true,
+        });
 
-    if (error) {
-      const message = error.details.map((detail) => detail.message).join(', ');
-      return next(AppError.badRequest(message, 'VALIDATION_ERROR'));
-    }
+        if (error) {
+            const message = error.details.map((detail) => detail.message).join(', ');
+            return next(AppError.badRequest(message, 'VALIDATION_ERROR'));
+        }
 
-    // Replace request data with validated and sanitized data
-    req[source] = value;
-    next();
-  };
+        // Replace request data with validated and sanitized data
+        req[source] = value;
+        next();
+    };
 };
 
 export default validate;

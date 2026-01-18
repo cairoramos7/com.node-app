@@ -5,138 +5,143 @@ import Post from '../../src/domain/post/post.entity';
 import UserModel from '../../src/infrastructure/user/user.model';
 
 describe('PostRepository Integration Tests', () => {
-  let postRepository: PostRepository;
-  let testUser: any;
+    let postRepository: PostRepository;
+    let testUser: any;
 
-  beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/ddd-blog-test');
-    postRepository = new PostRepository();
+    beforeAll(async () => {
+        await mongoose.connect(
+            process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/ddd-blog-test'
+        );
+        postRepository = new PostRepository();
 
-    // Create a test user for posts
-    testUser = await UserModel.create({ email: 'author@example.com', password: 'hashedpassword' });
-  });
-
-  afterEach(async () => {
-    await PostModel.deleteMany({});
-  });
-
-  afterAll(async () => {
-    await UserModel.deleteMany({});
-    await mongoose.connection.close();
-  });
-
-  it('should save a new post', async () => {
-    const postEntity = new Post(
-      'dummyId', // Repository should handle null or new ID? If passed dummyId, checking if it generates new one or uses it.
-      // JS passed dummyId.
-      'Test Title',
-      'Test Content',
-      ['tag1'],
-      testUser._id.toString()
-    );
-    // Usually save(new Post(...)) where ID is null for new? 
-    // But repository implementation might handle updates if ID exists.
-    // Logic: if id exists, update? or just save? Mongoose save() handles new/update.
-    // JS test passed 'dummyId'.
-    
-    // Correct way for new post might be null ID.
-    // But let's follow JS test logic.
-    
-    const savedPost = await postRepository.save(postEntity);
-
-    expect(savedPost).toBeInstanceOf(Post);
-    expect(savedPost.title).toBe('Test Title');
-    expect(savedPost.id).toBeDefined();
-
-    const foundPost = await PostModel.findById(savedPost.id);
-    expect(foundPost?.title).toBe('Test Title');
-    expect(foundPost?.authorId.toString()).toBe(testUser._id.toString());
-  });
-
-  it('should find a post by id', async () => {
-    const createdPost = await PostModel.create({
-      title: 'Find Me',
-      content: 'Content to find',
-      tags: ['search'],
-      authorId: testUser._id,
+        // Create a test user for posts
+        testUser = await UserModel.create({
+            email: 'author@example.com',
+            password: 'hashedpassword',
+        });
     });
 
-    const foundPost = await postRepository.findById(createdPost._id.toString());
-
-    expect(foundPost).toBeInstanceOf(Post);
-    expect(foundPost?.title).toBe('Find Me');
-    expect(foundPost?.id).toBe(createdPost._id.toString());
-  });
-
-  it('should return null if post not found by id', async () => {
-    const foundPost = await postRepository.findById(new mongoose.Types.ObjectId().toString());
-    expect(foundPost).toBeNull();
-  });
-
-  it('should find all posts', async () => {
-    await PostModel.create({
-      title: 'Post 1',
-      content: 'Content 1',
-      authorId: testUser._id,
-    });
-    await PostModel.create({
-      title: 'Post 2',
-      content: 'Content 2',
-      authorId: testUser._id,
+    afterEach(async () => {
+        await PostModel.deleteMany({});
     });
 
-    const posts = await postRepository.findAll();
-
-    expect(posts).toHaveLength(2);
-    expect(posts[0]).toBeInstanceOf(Post);
-    expect(posts[1]).toBeInstanceOf(Post);
-  });
-
-  it('should update an existing post', async () => {
-    const createdPost = await PostModel.create({
-      title: 'Original Title',
-      content: 'Original Content',
-      tags: ['old'],
-      authorId: testUser._id,
+    afterAll(async () => {
+        await UserModel.deleteMany({});
+        await mongoose.connection.close();
     });
 
-    const updatedPostEntity = new Post(
-      createdPost._id.toString(),
-      'Updated Title',
-      'Updated Content',
-      ['new'],
-      testUser._id.toString()
-    );
-    const result = await postRepository.update(updatedPostEntity);
+    it('should save a new post', async () => {
+        const postEntity = new Post(
+            'dummyId', // Repository should handle null or new ID? If passed dummyId, checking if it generates new one or uses it.
+            // JS passed dummyId.
+            'Test Title',
+            'Test Content',
+            ['tag1'],
+            testUser._id.toString()
+        );
+        // Usually save(new Post(...)) where ID is null for new?
+        // But repository implementation might handle updates if ID exists.
+        // Logic: if id exists, update? or just save? Mongoose save() handles new/update.
+        // JS test passed 'dummyId'.
 
-    expect(result).toBeInstanceOf(Post);
-    expect(result.title).toBe('Updated Title');
-    expect(result.content).toBe('Updated Content');
-    expect(result.tags).toEqual(['new']);
+        // Correct way for new post might be null ID.
+        // But let's follow JS test logic.
 
-    const foundPost = await PostModel.findById(createdPost._id);
-    expect(foundPost?.title).toBe('Updated Title');
-  });
+        const savedPost = await postRepository.save(postEntity);
 
-  it('should delete a post', async () => {
-    const createdPost = await PostModel.create({
-      title: 'To Be Deleted',
-      content: 'Delete me',
-      authorId: testUser._id,
+        expect(savedPost).toBeInstanceOf(Post);
+        expect(savedPost.title).toBe('Test Title');
+        expect(savedPost.id).toBeDefined();
+
+        const foundPost = await PostModel.findById(savedPost.id);
+        expect(foundPost?.title).toBe('Test Title');
+        expect(foundPost?.authorId.toString()).toBe(testUser._id.toString());
     });
 
-    await postRepository.delete(createdPost._id.toString());
-    // JS test checked return boolean, but delete method might return void in TS interface.
-    // Interface: delete(id: string): Promise<void>;
-    // So expect(isDeleted) is not valid if void.
-    // I should verify deletion by querying model.
-    
-    // JS: const isDeleted = ... expect(isDeleted).toBe(true)
-    // My TS Interface: delete(id): Promise<void>
-    // So I removed return value.
-    // I will remove the assertion on return value.
+    it('should find a post by id', async () => {
+        const createdPost = await PostModel.create({
+            title: 'Find Me',
+            content: 'Content to find',
+            tags: ['search'],
+            authorId: testUser._id,
+        });
 
-    const foundPost = await PostModel.findById(createdPost._id);
-    expect(foundPost).toBeNull();
-  });
+        const foundPost = await postRepository.findById(createdPost._id.toString());
+
+        expect(foundPost).toBeInstanceOf(Post);
+        expect(foundPost?.title).toBe('Find Me');
+        expect(foundPost?.id).toBe(createdPost._id.toString());
+    });
+
+    it('should return null if post not found by id', async () => {
+        const foundPost = await postRepository.findById(new mongoose.Types.ObjectId().toString());
+        expect(foundPost).toBeNull();
+    });
+
+    it('should find all posts', async () => {
+        await PostModel.create({
+            title: 'Post 1',
+            content: 'Content 1',
+            authorId: testUser._id,
+        });
+        await PostModel.create({
+            title: 'Post 2',
+            content: 'Content 2',
+            authorId: testUser._id,
+        });
+
+        const posts = await postRepository.findAll();
+
+        expect(posts).toHaveLength(2);
+        expect(posts[0]).toBeInstanceOf(Post);
+        expect(posts[1]).toBeInstanceOf(Post);
+    });
+
+    it('should update an existing post', async () => {
+        const createdPost = await PostModel.create({
+            title: 'Original Title',
+            content: 'Original Content',
+            tags: ['old'],
+            authorId: testUser._id,
+        });
+
+        const updatedPostEntity = new Post(
+            createdPost._id.toString(),
+            'Updated Title',
+            'Updated Content',
+            ['new'],
+            testUser._id.toString()
+        );
+        const result = await postRepository.update(updatedPostEntity);
+
+        expect(result).toBeInstanceOf(Post);
+        expect(result.title).toBe('Updated Title');
+        expect(result.content).toBe('Updated Content');
+        expect(result.tags).toEqual(['new']);
+
+        const foundPost = await PostModel.findById(createdPost._id);
+        expect(foundPost?.title).toBe('Updated Title');
+    });
+
+    it('should delete a post', async () => {
+        const createdPost = await PostModel.create({
+            title: 'To Be Deleted',
+            content: 'Delete me',
+            authorId: testUser._id,
+        });
+
+        await postRepository.delete(createdPost._id.toString());
+        // JS test checked return boolean, but delete method might return void in TS interface.
+        // Interface: delete(id: string): Promise<void>;
+        // So expect(isDeleted) is not valid if void.
+        // I should verify deletion by querying model.
+
+        // JS: const isDeleted = ... expect(isDeleted).toBe(true)
+        // My TS Interface: delete(id): Promise<void>
+        // So I removed return value.
+        // I will remove the assertion on return value.
+
+        const foundPost = await PostModel.findById(createdPost._id);
+        expect(foundPost).toBeNull();
+    });
 });

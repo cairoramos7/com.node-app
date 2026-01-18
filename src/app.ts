@@ -52,7 +52,6 @@ const app: Express = express();
 // Connect to Database
 // connectDB(); // Moved to server.ts
 
-
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -79,51 +78,51 @@ setupSwagger(app);
  *                 timestamp: { type: string, format: date-time }
  */
 app.get('/api/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    success: true,
-    message: 'OK',
-    timestamp: new Date().toISOString(),
-  });
+    res.status(200).json({
+        success: true,
+        message: 'OK',
+        timestamp: new Date().toISOString(),
+    });
 });
 
 // Register dependencies in container
 container.registerSingleton('userRepository', () => new ConcreteUserRepository());
 container.registerSingleton('emailService', () => {
-  const emailConfig = {
-    host: process.env.EMAIL_HOST || '',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: process.env.EMAIL_SECURE === 'true',
-    auth: {
-      user: process.env.EMAIL_USER || '',
-      pass: process.env.EMAIL_PASS || '',
-    },
-  };
-  return new ConcreteEmailService(emailConfig);
+    const emailConfig = {
+        host: process.env.EMAIL_HOST || '',
+        port: parseInt(process.env.EMAIL_PORT || '587'),
+        secure: process.env.EMAIL_SECURE === 'true',
+        auth: {
+            user: process.env.EMAIL_USER || '',
+            pass: process.env.EMAIL_PASS || '',
+        },
+    };
+    return new ConcreteEmailService(emailConfig);
 });
 container.registerSingleton('postRepository', () => new ConcretePostRepository());
 
 // Register User Use Cases
 container.register(
-  'updateUserNameUseCase',
-  (c) => new UpdateUserNameUseCase(c.resolve('userRepository'))
+    'updateUserNameUseCase',
+    (c) => new UpdateUserNameUseCase(c.resolve('userRepository'))
 );
 container.register(
-  'requestEmailUpdateUseCase',
-  (c) => new RequestEmailUpdateUseCase(c.resolve('userRepository'), c.resolve('emailService'))
+    'requestEmailUpdateUseCase',
+    (c) => new RequestEmailUpdateUseCase(c.resolve('userRepository'), c.resolve('emailService'))
 );
 container.register(
-  'confirmEmailUpdateUseCase',
-  (c) => new ConfirmEmailUpdateUseCase(c.resolve('userRepository'))
+    'confirmEmailUpdateUseCase',
+    (c) => new ConfirmEmailUpdateUseCase(c.resolve('userRepository'))
 );
 container.register(
-  'updatePasswordUseCase',
-  (c) => new UpdatePasswordUseCase(c.resolve('userRepository'), c.resolve('emailService'))
+    'updatePasswordUseCase',
+    (c) => new UpdatePasswordUseCase(c.resolve('userRepository'), c.resolve('emailService'))
 );
 
 // Register Auth Use Cases
 container.register(
-  'registerUserUseCase',
-  (c) => new RegisterUserUseCase(c.resolve('userRepository'))
+    'registerUserUseCase',
+    (c) => new RegisterUserUseCase(c.resolve('userRepository'))
 );
 container.register('loginUserUseCase', (c) => new LoginUserUseCase(c.resolve('userRepository')));
 container.register('whoamiUseCase', (c) => new WhoamiUseCase(c.resolve('userRepository')));
@@ -131,48 +130,48 @@ container.register('whoamiUseCase', (c) => new WhoamiUseCase(c.resolve('userRepo
 // Register Post Use Cases
 container.register('createPostUseCase', (c) => new CreatePostUseCase(c.resolve('postRepository')));
 container.register(
-  'getPostByIdUseCase',
-  (c) => new GetPostByIdUseCase(c.resolve('postRepository'))
+    'getPostByIdUseCase',
+    (c) => new GetPostByIdUseCase(c.resolve('postRepository'))
 );
 container.register(
-  'getAllPostsUseCase',
-  (c) => new GetAllPostsUseCase(c.resolve('postRepository'))
+    'getAllPostsUseCase',
+    (c) => new GetAllPostsUseCase(c.resolve('postRepository'))
 );
 container.register('updatePostUseCase', (c) => new UpdatePostUseCase(c.resolve('postRepository')));
 container.register('deletePostUseCase', (c) => new DeletePostUseCase(c.resolve('postRepository')));
 
 // Register controllers
 container.register(
-  'userController',
-  (c) =>
-    new UserController(
-      c.resolve('updateUserNameUseCase'),
-      c.resolve('requestEmailUpdateUseCase'),
-      c.resolve('confirmEmailUpdateUseCase'),
-      c.resolve('updatePasswordUseCase')
-    )
+    'userController',
+    (c) =>
+        new UserController(
+            c.resolve('updateUserNameUseCase'),
+            c.resolve('requestEmailUpdateUseCase'),
+            c.resolve('confirmEmailUpdateUseCase'),
+            c.resolve('updatePasswordUseCase')
+        )
 );
 
 container.register(
-  'authController',
-  (c) =>
-    new AuthController(
-      c.resolve('registerUserUseCase'),
-      c.resolve('loginUserUseCase'),
-      c.resolve('whoamiUseCase')
-    )
+    'authController',
+    (c) =>
+        new AuthController(
+            c.resolve('registerUserUseCase'),
+            c.resolve('loginUserUseCase'),
+            c.resolve('whoamiUseCase')
+        )
 );
 
 container.register(
-  'postController',
-  (c) =>
-    new PostController(
-      c.resolve('createPostUseCase'),
-      c.resolve('getPostByIdUseCase'),
-      c.resolve('getAllPostsUseCase'),
-      c.resolve('updatePostUseCase'),
-      c.resolve('deletePostUseCase')
-    )
+    'postController',
+    (c) =>
+        new PostController(
+            c.resolve('createPostUseCase'),
+            c.resolve('getPostByIdUseCase'),
+            c.resolve('getAllPostsUseCase'),
+            c.resolve('updatePostUseCase'),
+            c.resolve('deletePostUseCase')
+        )
 );
 
 // Define Routes
@@ -182,13 +181,13 @@ app.use('/api/users', createUserRoutes(container.resolve('userController')));
 
 // 404 handler for undefined routes
 app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    error: {
-      code: 'NOT_FOUND',
-      message: `Route ${req.method} ${req.originalUrl} not found`,
-    },
-  });
+    res.status(404).json({
+        success: false,
+        error: {
+            code: 'NOT_FOUND',
+            message: `Route ${req.method} ${req.originalUrl} not found`,
+        },
+    });
 });
 
 // Global error handler (must be last)

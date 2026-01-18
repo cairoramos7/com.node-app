@@ -72,16 +72,16 @@ src/
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/your-username/ddd-blog-app.git
-   cd ddd-blog-app
-   ```
+    ```bash
+    git clone https://github.com/your-username/ddd-blog-app.git
+    cd ddd-blog-app
+    ```
 
 2. Install dependencies:
 
-   ```bash
-   pnpm install
-   ```
+    ```bash
+    pnpm install
+    ```
 
 ### Environment Variables
 

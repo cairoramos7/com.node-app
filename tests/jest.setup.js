@@ -6,8 +6,7 @@ const path = require('path');
 
 const uriFile = path.join(__dirname, '../test-mongo-uri.json');
 if (fs.existsSync(uriFile)) {
-  const { mongoUri } = JSON.parse(fs.readFileSync(uriFile, 'utf8'));
-  process.env.MONGO_URI = mongoUri;
-  process.env.MONGO_URI_TEST = mongoUri;
+    const { mongoUri } = JSON.parse(fs.readFileSync(uriFile, 'utf8'));
+    process.env.MONGO_URI = mongoUri;
+    process.env.MONGO_URI_TEST = mongoUri;
 }
-

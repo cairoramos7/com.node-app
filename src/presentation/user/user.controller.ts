@@ -5,82 +5,82 @@ import ConfirmEmailUpdateUseCase from '../../application/usecases/user/ConfirmEm
 import UpdatePasswordUseCase from '../../application/usecases/user/UpdatePasswordUseCase';
 
 export default class UserController {
-  private updateUserNameUseCase: UpdateUserNameUseCase;
-  private requestEmailUpdateUseCase: RequestEmailUpdateUseCase;
-  private confirmEmailUpdateUseCase: ConfirmEmailUpdateUseCase;
-  private updatePasswordUseCase: UpdatePasswordUseCase;
+    private updateUserNameUseCase: UpdateUserNameUseCase;
+    private requestEmailUpdateUseCase: RequestEmailUpdateUseCase;
+    private confirmEmailUpdateUseCase: ConfirmEmailUpdateUseCase;
+    private updatePasswordUseCase: UpdatePasswordUseCase;
 
-  constructor(
-    updateUserNameUseCase: UpdateUserNameUseCase,
-    requestEmailUpdateUseCase: RequestEmailUpdateUseCase,
-    confirmEmailUpdateUseCase: ConfirmEmailUpdateUseCase,
-    updatePasswordUseCase: UpdatePasswordUseCase
-  ) {
-    this.updateUserNameUseCase = updateUserNameUseCase;
-    this.requestEmailUpdateUseCase = requestEmailUpdateUseCase;
-    this.confirmEmailUpdateUseCase = confirmEmailUpdateUseCase;
-    this.updatePasswordUseCase = updatePasswordUseCase;
-  }
-
-  updateUserName = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = req.params.id as string;
-      const newName = req.body.name;
-      const updatedUser = await this.updateUserNameUseCase.execute(userId, newName);
-      res.status(200).json(updatedUser);
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
+    constructor(
+        updateUserNameUseCase: UpdateUserNameUseCase,
+        requestEmailUpdateUseCase: RequestEmailUpdateUseCase,
+        confirmEmailUpdateUseCase: ConfirmEmailUpdateUseCase,
+        updatePasswordUseCase: UpdatePasswordUseCase
+    ) {
+        this.updateUserNameUseCase = updateUserNameUseCase;
+        this.requestEmailUpdateUseCase = requestEmailUpdateUseCase;
+        this.confirmEmailUpdateUseCase = confirmEmailUpdateUseCase;
+        this.updatePasswordUseCase = updatePasswordUseCase;
     }
-  };
 
-  requestEmailUpdate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = req.params.id as string;
-      const newEmail = req.body.email;
+    updateUserName = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const userId = req.params.id as string;
+            const newName = req.body.name;
+            const updatedUser = await this.updateUserNameUseCase.execute(userId, newName);
+            res.status(200).json(updatedUser);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    };
 
-      if (!newEmail) {
-        res.status(400).json({ message: 'New email is required.' });
-        return;
-      }
+    requestEmailUpdate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const userId = req.params.id as string;
+            const newEmail = req.body.email;
 
-      await this.requestEmailUpdateUseCase.execute(userId, newEmail);
-      res.status(200).json({ message: 'Confirmation email sent. Please check your inbox.' });
-    } catch (error: any) {
-       res.status(400).json({ message: error.message });
-    }
-  };
+            if (!newEmail) {
+                res.status(400).json({ message: 'New email is required.' });
+                return;
+            }
 
-  confirmEmailUpdate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = req.params.id as string;
-      const token = req.body.token;
+            await this.requestEmailUpdateUseCase.execute(userId, newEmail);
+            res.status(200).json({ message: 'Confirmation email sent. Please check your inbox.' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    };
 
-      if (!token) {
-        res.status(400).json({ message: 'Confirmation token is required.' });
-        return;
-      }
+    confirmEmailUpdate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const userId = req.params.id as string;
+            const token = req.body.token;
 
-      await this.confirmEmailUpdateUseCase.execute(userId, token);
-      res.status(200).json({ message: 'Email updated successfully.' });
-    } catch (error: any) {
-       res.status(400).json({ message: error.message });
-    }
-  };
+            if (!token) {
+                res.status(400).json({ message: 'Confirmation token is required.' });
+                return;
+            }
 
-  updatePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = req.params.id as string;
-      const { oldPassword, newPassword } = req.body;
+            await this.confirmEmailUpdateUseCase.execute(userId, token);
+            res.status(200).json({ message: 'Email updated successfully.' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    };
 
-      if (!oldPassword || !newPassword) {
-         res.status(400).json({ message: 'Old password and new password are required.' });
-         return;
-      }
+    updatePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const userId = req.params.id as string;
+            const { oldPassword, newPassword } = req.body;
 
-      await this.updatePasswordUseCase.execute(userId, oldPassword, newPassword);
-      res.status(200).json({ message: 'Password updated successfully.' });
-    } catch (error: any) {
-       res.status(400).json({ message: error.message });
-    }
-  };
+            if (!oldPassword || !newPassword) {
+                res.status(400).json({ message: 'Old password and new password are required.' });
+                return;
+            }
+
+            await this.updatePasswordUseCase.execute(userId, oldPassword, newPassword);
+            res.status(200).json({ message: 'Password updated successfully.' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    };
 }
