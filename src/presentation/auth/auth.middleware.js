@@ -1,16 +1,16 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-  const authHeader = req.header("Authorization");
+  const authHeader = req.header('Authorization');
 
   if (!authHeader) {
-    return res.status(401).json({ msg: "No token, authorization denied" });
+    return res.status(401).json({ msg: 'No token, authorization denied' });
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ msg: "No token, authorization denied" });
+    return res.status(401).json({ msg: 'No token, authorization denied' });
   }
 
   try {
@@ -18,6 +18,6 @@ module.exports = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(401).json({ msg: "Token is not valid" });
+    res.status(401).json({ msg: 'Token is not valid' });
   }
 };

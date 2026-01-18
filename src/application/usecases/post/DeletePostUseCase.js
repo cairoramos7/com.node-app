@@ -6,7 +6,7 @@ class DeletePostUseCase {
   async execute(id) {
     const existingPost = await this.postRepository.findById(id);
     if (!existingPost) {
-      throw new Error("Post not found");
+      throw new Error('Post not found');
     }
     return await this.postRepository.delete(id);
   }

@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
 class LoginUserUseCase {
   constructor(userRepository) {
@@ -8,15 +8,15 @@ class LoginUserUseCase {
   async execute(email, password) {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new Error('Invalid credentials');
     }
 
     const isMatch = await this.userRepository.comparePassword(email, password);
     if (!isMatch) {
-      throw new Error("Invalid credentials");
+      throw new Error('Invalid credentials');
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     return token;
   }
 }

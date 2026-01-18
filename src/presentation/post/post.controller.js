@@ -1,5 +1,11 @@
 class PostController {
-  constructor(createPostUseCase, getPostByIdUseCase, getAllPostsUseCase, updatePostUseCase, deletePostUseCase) {
+  constructor(
+    createPostUseCase,
+    getPostByIdUseCase,
+    getAllPostsUseCase,
+    updatePostUseCase,
+    deletePostUseCase
+  ) {
     this.createPostUseCase = createPostUseCase;
     this.getPostByIdUseCase = getPostByIdUseCase;
     this.getAllPostsUseCase = getAllPostsUseCase;
@@ -32,7 +38,7 @@ class PostController {
       const { id } = req.params;
       const post = await this.getPostByIdUseCase.execute(id);
       if (!post) {
-        return res.status(404).json({ error: "Post not found" });
+        return res.status(404).json({ error: 'Post not found' });
       }
       res.status(200).json(post);
     } catch (error) {

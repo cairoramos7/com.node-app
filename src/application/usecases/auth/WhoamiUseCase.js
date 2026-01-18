@@ -7,7 +7,7 @@ class WhoamiUseCase {
     const user = await this.userRepository.findById(userId);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
 
     // Manually construct the user object to exclude the password and ensure id is a string

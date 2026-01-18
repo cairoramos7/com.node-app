@@ -23,7 +23,7 @@ class User {
     this.pendingEmailUpdate = {
       newEmail,
       token,
-      expires: new Date(Date.now() + 3600000) // 1 hour expiration
+      expires: new Date(Date.now() + 3600000), // 1 hour expiration
     };
   }
 

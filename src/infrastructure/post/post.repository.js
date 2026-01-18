@@ -15,17 +15,28 @@ class PostRepository extends IPostRepository {
       authorId: postEntity.authorId,
     });
     await newPost.save();
-    return new Post(newPost._id.toString(), newPost.title, newPost.content, newPost.tags, newPost.authorId.toString());
+    return new Post(
+      newPost._id.toString(),
+      newPost.title,
+      newPost.content,
+      newPost.tags,
+      newPost.authorId.toString()
+    );
   }
 
   async findById(id) {
     const post = await PostModel.findById(id);
-    return post ? new Post(post._id.toString(), post.title, post.content, post.tags, post.authorId.toString()) : null;
+    return post
+      ? new Post(post._id.toString(), post.title, post.content, post.tags, post.authorId.toString())
+      : null;
   }
 
   async findAll() {
     const posts = await PostModel.find();
-    return posts.map(post => new Post(post._id.toString(), post.title, post.content, post.tags, post.authorId.toString()));
+    return posts.map(
+      (post) =>
+        new Post(post._id.toString(), post.title, post.content, post.tags, post.authorId.toString())
+    );
   }
 
   async update(postEntity) {
@@ -38,7 +49,15 @@ class PostRepository extends IPostRepository {
       },
       { new: true }
     );
-    return updatedPost ? new Post(updatedPost._id.toString(), updatedPost.title, updatedPost.content, updatedPost.tags, updatedPost.authorId.toString()) : null;
+    return updatedPost
+      ? new Post(
+          updatedPost._id.toString(),
+          updatedPost.title,
+          updatedPost.content,
+          updatedPost.tags,
+          updatedPost.authorId.toString()
+        )
+      : null;
   }
 
   async delete(id) {

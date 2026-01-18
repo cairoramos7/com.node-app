@@ -18,12 +18,13 @@ class UserRepository extends IUserRepository {
   }
 
   async save(userEntity) {
-    if (userEntity.id) { // If userEntity has an ID, it's an an update
+    if (userEntity.id) {
+      // If userEntity has an ID, it's an an update
       writeDebugLog(`UserRepository.save: Updating existing user with ID: ${userEntity.id}`);
       const userDoc = await UserModel.findById(userEntity.id);
       writeDebugLog(`UserRepository.save: Result of findById in save: ${JSON.stringify(userDoc)}`);
       if (!userDoc) {
-        throw new Error("User not found for update");
+        throw new Error('User not found for update');
       }
 
       userDoc.name = userEntity.name;
@@ -40,15 +41,28 @@ class UserRepository extends IUserRepository {
 
       const updatedUserDoc = await userDoc.save();
 
-      const updatedUserEntity = new User(updatedUserDoc._id.toString(), updatedUserDoc.name, updatedUserDoc.email, updatedUserDoc.password);
+      const updatedUserEntity = new User(
+        updatedUserDoc._id.toString(),
+        updatedUserDoc.name,
+        updatedUserDoc.email,
+        updatedUserDoc.password
+      );
 
       if (updatedUserDoc.pendingEmailUpdate === null) {
         updatedUserEntity.clearPendingEmailUpdate();
-      } else if (updatedUserDoc.pendingEmailUpdate && updatedUserDoc.pendingEmailUpdate.newEmail && updatedUserDoc.pendingEmailUpdate.token) {
-        updatedUserEntity.setPendingEmailUpdate(updatedUserDoc.pendingEmailUpdate.newEmail, updatedUserDoc.pendingEmailUpdate.token);
+      } else if (
+        updatedUserDoc.pendingEmailUpdate &&
+        updatedUserDoc.pendingEmailUpdate.newEmail &&
+        updatedUserDoc.pendingEmailUpdate.token
+      ) {
+        updatedUserEntity.setPendingEmailUpdate(
+          updatedUserDoc.pendingEmailUpdate.newEmail,
+          updatedUserDoc.pendingEmailUpdate.token
+        );
       }
       return updatedUserEntity;
-    } else { // Otherwise, it's a new user
+    } else {
+      // Otherwise, it's a new user
       const newUser = new UserModel({
         name: userEntity.name,
         email: userEntity.email,
@@ -56,9 +70,21 @@ class UserRepository extends IUserRepository {
         pendingEmailUpdate: userEntity.pendingEmailUpdate,
       });
       await newUser.save();
-      const createdUserEntity = new User(newUser._id.toString(), newUser.name, newUser.email, newUser.password);
-      if (newUser.pendingEmailUpdate && newUser.pendingEmailUpdate.newEmail && newUser.pendingEmailUpdate.token) {
-        createdUserEntity.setPendingEmailUpdate(newUser.pendingEmailUpdate.newEmail, newUser.pendingEmailUpdate.token);
+      const createdUserEntity = new User(
+        newUser._id.toString(),
+        newUser.name,
+        newUser.email,
+        newUser.password
+      );
+      if (
+        newUser.pendingEmailUpdate &&
+        newUser.pendingEmailUpdate.newEmail &&
+        newUser.pendingEmailUpdate.token
+      ) {
+        createdUserEntity.setPendingEmailUpdate(
+          newUser.pendingEmailUpdate.newEmail,
+          newUser.pendingEmailUpdate.token
+        );
       }
       return createdUserEntity;
     }
@@ -66,10 +92,19 @@ class UserRepository extends IUserRepository {
 
   async findByEmail(email) {
     const user = await UserModel.findOne({ email });
-    if (!user) return null;
+    if (!user) {
+      return null;
+    }
     const userEntity = new User(user._id.toString(), user.name, user.email, user.password);
-    if (user.pendingEmailUpdate && user.pendingEmailUpdate.newEmail && user.pendingEmailUpdate.token) {
-      userEntity.setPendingEmailUpdate(user.pendingEmailUpdate.newEmail, user.pendingEmailUpdate.token);
+    if (
+      user.pendingEmailUpdate &&
+      user.pendingEmailUpdate.newEmail &&
+      user.pendingEmailUpdate.token
+    ) {
+      userEntity.setPendingEmailUpdate(
+        user.pendingEmailUpdate.newEmail,
+        user.pendingEmailUpdate.token
+      );
     }
     return userEntity;
   }
@@ -82,11 +117,20 @@ class UserRepository extends IUserRepository {
     }
     const user = await UserModel.findById(id);
     writeDebugLog(`UserRepository.findById: Result for ID ${id}: ${JSON.stringify(user)}`);
-    if (!user) return null;
+    if (!user) {
+      return null;
+    }
 
     const userEntity = new User(user._id.toString(), user.name, user.email, user.password);
-    if (user.pendingEmailUpdate && user.pendingEmailUpdate.newEmail && user.pendingEmailUpdate.token) {
-      userEntity.setPendingEmailUpdate(user.pendingEmailUpdate.newEmail, user.pendingEmailUpdate.token);
+    if (
+      user.pendingEmailUpdate &&
+      user.pendingEmailUpdate.newEmail &&
+      user.pendingEmailUpdate.token
+    ) {
+      userEntity.setPendingEmailUpdate(
+        user.pendingEmailUpdate.newEmail,
+        user.pendingEmailUpdate.token
+      );
     } else if (user.pendingEmailUpdate === null || user.pendingEmailUpdate === undefined) {
       userEntity.clearPendingEmailUpdate();
     }
@@ -100,8 +144,6 @@ class UserRepository extends IUserRepository {
     }
     return await bcrypt.compare(candidatePassword, user.password);
   }
-
-
 }
 
 module.exports = UserRepository;

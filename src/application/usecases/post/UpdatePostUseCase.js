@@ -6,7 +6,7 @@ class UpdatePostUseCase {
   async execute(id, title, content, tags) {
     const existingPost = await this.postRepository.findById(id);
     if (!existingPost) {
-      throw new Error("Post not found");
+      throw new Error('Post not found');
     }
     existingPost.title = title || existingPost.title;
     existingPost.content = content || existingPost.content;

@@ -1,4 +1,4 @@
-const Post = require("@src/domain/post/post.entity");
+const Post = require('@src/domain/post/post.entity');
 
 class CreatePostUseCase {
   constructor(postRepository) {
