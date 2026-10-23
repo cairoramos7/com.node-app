@@ -16,27 +16,23 @@ class UserRepository implements IUserRepository {
             userDoc.name = userEntity.name || undefined;
             userDoc.email = userEntity.email;
 
+            // Handle pending email update
             if (userEntity.pendingEmailUpdate === null) {
                 userDoc.pendingEmailUpdate = null as any;
-            } else {
+            } else if (userEntity.pendingEmailUpdate) {
                 userDoc.pendingEmailUpdate = {
                     newEmail: userEntity.pendingEmailUpdate.newEmail,
                     token: userEntity.pendingEmailUpdate.token,
                     expires: userEntity.pendingEmailUpdate.expires,
                 };
             }
-            // Password handled by pre-save hook only if set on the doc
 
-            // Need to explicitly set password if changed, or handle via dedicated method.
-            // For this implementation, we assume if password is in entity, it might be new?
-            // Actually, entity logic usually hashes? No, infrastructure does.
-            // But entity has plain password?
-            // Let's assume if entity.password is set and different, we update it.
-            // But we can't check difference easily without hash.
-            // For now, let's assume we map simply.
-
-            // FIX: The original JS ignored password here. I'll stick to that behavior
-            // unless it's a new user.
+            // Handle password update explicitly
+            // Only update if password was set on entity (indicates intentional password change)
+            if (userEntity.password && userEntity.password !== userDoc.password) {
+                // Password will be hashed by the pre-save hook in the model
+                userDoc.password = userEntity.password;
+            }
 
             const updatedUserDoc = await userDoc.save();
             return this.mapToEntity(updatedUserDoc);

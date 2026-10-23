@@ -1,16 +1,16 @@
-# DDD Node Application
+# com-node-app
 
-[![CI](https://github.com/your-username/ddd-blog-app/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/ddd-blog-app/actions/workflows/ci.yml)
+[![CI](https://github.com/cairoramos7/com.node-app/actions/workflows/ci.yml/badge.svg)](https://github.com/cairoramos7/com.node-app/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 
-A blog application built with Node.js following **Domain-Driven Design (DDD)** principles. This project demonstrates clean architecture with a clear separation of concerns between domain, application, infrastructure, and presentation layers.
+A Node.js boilerplate built following **Domain-Driven Design (DDD)** principles. This project demonstrates clean architecture with a clear separation of concerns between domain, application, infrastructure, and presentation layers.
 
 ## Features
 
 - **User Authentication**: Register, login, logout, and session management with JWT
 - **User Management**: Create, read, update, and delete user profiles
-- **Post Management**: Full CRUD operations for blog posts with tagging support
+- **Task Management**: Full CRUD operations for tasks with tagging and completion status
 - **API Documentation**: Interactive Swagger UI at `/api-docs`
 - **Data Validation**: Robust input validation using Joi
 - **Data Persistence**: MongoDB integration using Mongoose
@@ -35,28 +35,28 @@ A blog application built with Node.js following **Domain-Driven Design (DDD)** p
 
 ## Architecture
 
-The application follows Domain-Driven Design (DDD) principles:
+The application follows Domain-Driven Design (DDD) principles. See [Architecture Documentation](docs/ARCHITECTURE.md) for details.
 
 ```
 src/
 ├── domain/           # Core business logic (entities, repositories interfaces)
-│   ├── post/         # Post entity and repository interface
+│   ├── task/         # Task entity and repository interface
 │   ├── user/         # User entity and repository interface
 │   └── services/     # Domain service interfaces
 ├── application/      # Use cases (orchestrates domain operations)
-│   └── usecases/     # CreatePost, UpdateUser, etc.
+│   └── usecases/     # create-task-use-case, update-user-name-use-case, etc.
 ├── infrastructure/   # Technical implementations
 │   ├── database/     # MongoDB connection
-│   ├── post/         # Post repository implementation
+│   ├── task/         # Task repository implementation
 │   ├── user/         # User repository implementation
+│   ├── logger/       # Winston logger
 │   └── services/     # Email service implementation
 ├── presentation/     # HTTP layer (routes, controllers)
 │   ├── auth/         # Authentication endpoints
-│   ├── post/         # Post endpoints
+│   ├── task/         # Task endpoints
 │   ├── user/         # User endpoints
-│   └── middlewares/  # Error handling, validation
+│   └── middlewares/  # Error handling, validation, rate limiting
 └── shared/           # Shared utilities
-    ├── container.js  # Dependency injection
     └── errors/       # Custom error classes
 ```
 
@@ -73,8 +73,8 @@ src/
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/your-username/ddd-blog-app.git
-    cd ddd-blog-app
+    git clone git@github.com:cairoramos7/com.node-app.git
+    cd com.node-app
     ```
 
 2. Install dependencies:
@@ -90,7 +90,7 @@ Create a `.env.local` file based on `.env.example`:
 ```env
 NODE_ENV=development
 PORT=3000
-MONGO_URI=mongodb://localhost:27017/ddd-blog
+MONGO_URI=mongodb://localhost:27017/com-node-app
 JWT_SECRET=your_jwt_secret_here
 JWT_EXPIRES_IN=1d
 REFRESH_TOKEN_SECRET=your_refresh_token_secret
@@ -99,7 +99,8 @@ EMAIL_HOST=smtp.mailtrap.io
 EMAIL_PORT=2525
 EMAIL_USER=your_mailtrap_user
 EMAIL_PASS=your_mailtrap_password
-EMAIL_FROM=noreply@ddd-blog.com
+EMAIL_FROM=noreply@com-node-app.com
+LOG_LEVEL=debug
 ```
 
 ## Running the Application
@@ -141,11 +142,11 @@ Interactive API documentation is available at `/api-docs` when the server is run
 | POST   | `/api/auth/register`  | Register a new user     |
 | POST   | `/api/auth/login`     | Login and get JWT token |
 | GET    | `/api/auth/whoami`    | Get current user info   |
-| GET    | `/api/posts`          | List all posts          |
-| POST   | `/api/posts`          | Create a new post       |
-| GET    | `/api/posts/:id`      | Get post by ID          |
-| PUT    | `/api/posts/:id`      | Update a post           |
-| DELETE | `/api/posts/:id`      | Delete a post           |
+| GET    | `/api/tasks`          | List all tasks          |
+| POST   | `/api/tasks`          | Create a new task       |
+| GET    | `/api/tasks/:id`      | Get task by ID          |
+| PUT    | `/api/tasks/:id`      | Update a task           |
+| DELETE | `/api/tasks/:id`      | Delete a task           |
 | PUT    | `/api/users/name`     | Update user name        |
 | PUT    | `/api/users/password` | Update password         |
 
@@ -211,17 +212,23 @@ docs: update API documentation
 chore: upgrade dependencies
 ```
 
+## Contributing
+
+1. **Language**: All code, comments, commit messages, and issues must be in **English**.
+2. **Architecture**: Strictly follow the Domain-Driven Design (DDD) layers.
+3. **Testing**: Ensure new features are covered by tests.
+
 ## Project Structure
 
 ```
 .
 ├── .github/workflows/   # CI/CD configuration
-├── src/                 # Source code (DDD layers)
+├── src/                 # Source code (DDD layers, TypeScript)
+│   ├── app.ts           # Express app configuration
+│   └── server.ts        # Server entry point
 ├── tests/               # Test files
 │   ├── integration/     # Integration tests
 │   └── unit/            # Unit tests
-├── app.js               # Express app configuration
-├── server.js            # Server entry point
 ├── docker-compose.yml   # Docker services configuration
 ├── Dockerfile           # Production Docker image
 └── package.json         # Project dependencies

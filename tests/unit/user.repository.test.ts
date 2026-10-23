@@ -10,7 +10,7 @@ describe('UserRepository Integration Tests', () => {
     beforeAll(async () => {
         // Use an in-memory MongoDB for testing or a dedicated test database
         await mongoose.connect(
-            process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/ddd-blog-test'
+            process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/com-node-app-test'
         );
         userRepository = new UserRepository();
     });

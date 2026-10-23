@@ -46,22 +46,34 @@ jest.mock('../../src/presentation/auth/auth.middleware', () => {
                 };
                 next();
             } else {
-                res.status(401).json({ msg: 'Token is not valid' });
+                res.status(401).json({
+                    success: false,
+                    error: { message: 'Token is not valid', statusCode: 401, code: 'UNAUTHORIZED' },
+                });
             }
         } else {
-            res.status(401).json({ msg: 'No token, authorization denied' });
+            res.status(401).json({
+                success: false,
+                error: {
+                    message: 'No token, authorization denied',
+                    statusCode: 401,
+                    code: 'UNAUTHORIZED',
+                },
+            });
         }
     };
 });
 
 describe('Auth Routes', () => {
     beforeAll(async () => {
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ddd-blog-test');
+        await mongoose.connect(
+            process.env.MONGO_URI || 'mongodb://localhost:27017/com-node-app-test'
+        );
         await UserModel.deleteMany({});
         testUserForAuthMiddleware = await UserModel.create({
             name: 'Auth Middleware User',
             email: 'auth.middleware@example.com',
-            password: 'password123',
+            password: 'Password123',
         });
         global.testUserForAuthMiddleware = testUserForAuthMiddleware;
     });
@@ -72,7 +84,7 @@ describe('Auth Routes', () => {
         testUserForAuthMiddleware = await UserModel.create({
             name: 'Auth Middleware User',
             email: 'auth.middleware@example.com',
-            password: 'password123',
+            password: 'Password123',
         });
         global.testUserForAuthMiddleware = testUserForAuthMiddleware;
     });
@@ -85,7 +97,7 @@ describe('Auth Routes', () => {
         const res = await request(app).post('/api/auth/register').send({
             name: 'Test User',
             email: 'test@example.com',
-            password: 'password123',
+            password: 'Password123',
         });
         expect(res.statusCode).toEqual(201);
         expect(res.body).toHaveProperty('message', 'User registered successfully');
@@ -98,16 +110,16 @@ describe('Auth Routes', () => {
         const firstRes = await request(app).post('/api/auth/register').send({
             name: 'Duplicate User',
             email: 'duplicate@example.com',
-            password: 'password123',
+            password: 'Password123',
         });
         expect(firstRes.statusCode).toEqual(201);
 
         const res = await request(app).post('/api/auth/register').send({
             name: 'Another Duplicate User',
             email: 'duplicate@example.com',
-            password: 'password456',
+            password: 'Password456',
         });
-        expect(res.statusCode).toEqual(400);
+        expect(res.statusCode).toEqual(409);
         expect(res.body.error).toHaveProperty('message', 'User already exists');
     });
 
@@ -115,12 +127,12 @@ describe('Auth Routes', () => {
         await request(app).post('/api/auth/register').send({
             name: 'Login User',
             email: 'login@example.com',
-            password: 'password123',
+            password: 'Password123',
         });
 
         const res = await request(app).post('/api/auth/login').send({
             email: 'login@example.com',
-            password: 'password123',
+            password: 'Password123',
         });
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty('token');
@@ -154,7 +166,7 @@ describe('Auth Routes', () => {
         const res = await request(app).get('/api/auth/whoami');
 
         expect(res.statusCode).toEqual(401);
-        expect(res.body).toHaveProperty('msg', 'No token, authorization denied'); // Assuming app global handler or middleware message
+        expect(res.body.error).toHaveProperty('message', 'No token, authorization denied');
         // Note: The mock middleware returns generic msgs. My real middleware returns AppError.
         // If I mock it, I return what mock returns.
         // My mock implementation above returns { msg: ... }.
@@ -166,6 +178,6 @@ describe('Auth Routes', () => {
             .set('Authorization', `Bearer invalidtoken`);
 
         expect(res.statusCode).toEqual(401);
-        expect(res.body).toHaveProperty('msg', 'Token is not valid');
+        expect(res.body.error).toHaveProperty('message', 'Token is not valid');
     });
 });
