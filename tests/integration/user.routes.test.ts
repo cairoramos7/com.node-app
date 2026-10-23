@@ -21,10 +21,20 @@ jest.mock('../../src/presentation/auth/auth.middleware', () => {
                 };
                 next();
             } else {
-                res.status(401).json({ msg: 'Token is not valid' });
+                res.status(401).json({
+                    success: false,
+                    error: { message: 'Token is not valid', statusCode: 401, code: 'UNAUTHORIZED' },
+                });
             }
         } else {
-            res.status(401).json({ msg: 'No token, authorization denied' });
+            res.status(401).json({
+                success: false,
+                error: {
+                    message: 'No token, authorization denied',
+                    statusCode: 401,
+                    code: 'UNAUTHORIZED',
+                },
+            });
         }
     };
 });
@@ -44,7 +54,7 @@ let authToken: string;
 
 describe('User Routes', () => {
     beforeAll(async () => {
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ddd-blog-test');
+        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/com-node-app-test');
     });
 
     beforeEach(async () => {
@@ -87,7 +97,7 @@ describe('User Routes', () => {
             .send({ name: newName });
 
         expect(res.statusCode).toEqual(401);
-        expect(res.body).toHaveProperty('msg', 'No token, authorization denied');
+        expect(res.body.error).toHaveProperty('message', 'No token, authorization denied');
     });
 
     it('should return 401 if an invalid token is provided for name update', async () => {
@@ -98,7 +108,7 @@ describe('User Routes', () => {
             .send({ name: newName });
 
         expect(res.statusCode).toEqual(401);
-        expect(res.body).toHaveProperty('msg', 'Token is not valid');
+        expect(res.body.error).toHaveProperty('message', 'Token is not valid');
     });
 
     it('should return 400 if name is not provided', async () => {
@@ -111,7 +121,10 @@ describe('User Routes', () => {
         if (!res.body.error) {
             console.log('Validation Error Body:', JSON.stringify(res.body, null, 2));
         }
-        expect(res.body).toHaveProperty('message');
+        if (!res.body.error) {
+            console.log('Validation Error Body:', JSON.stringify(res.body, null, 2));
+        }
+        expect(res.body.error).toHaveProperty('message');
     });
 
     it('should return 400 if user ID is invalid', async () => {

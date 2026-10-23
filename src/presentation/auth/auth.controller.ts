@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import RegisterUserUseCase from '../../application/usecases/auth/RegisterUserUseCase';
-import LoginUserUseCase from '../../application/usecases/auth/LoginUserUseCase';
-import WhoamiUseCase from '../../application/usecases/auth/WhoamiUseCase';
+import RegisterUserUseCase from '../../application/usecases/auth/register-user-use-case';
+import LoginUserUseCase from '../../application/usecases/auth/login-user-use-case';
+import WhoamiUseCase from '../../application/usecases/auth/whoami-use-case';
 
 // Define strict interface for Request with user attached
 interface AuthRequest extends Request {

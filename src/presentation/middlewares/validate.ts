@@ -5,7 +5,7 @@
 
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import Joi from 'joi';
-import AppError from '../../shared/errors/AppError';
+import { BadRequestError } from '../../shared/errors';
 
 // Define strict types for source
 type ValidationSource = 'body' | 'query' | 'params';
@@ -27,7 +27,7 @@ const validate = (schema: Joi.Schema, source: ValidationSource = 'body'): Reques
 
         if (error) {
             const message = error.details.map((detail) => detail.message).join(', ');
-            return next(AppError.badRequest(message, 'VALIDATION_ERROR'));
+            return next(new BadRequestError(message));
         }
 
         // Replace request data with validated and sanitized data

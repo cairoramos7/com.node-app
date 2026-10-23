@@ -1,9 +1,9 @@
 import AuthController from '../../src/presentation/auth/auth.controller';
-import WhoamiUseCase from '../../src/application/usecases/auth/WhoamiUseCase';
+import WhoamiUseCase from '../../src/application/usecases/auth/whoami-use-case';
 import { Request, Response } from 'express';
 
 // Mock dependencies
-jest.mock('../../src/application/usecases/auth/WhoamiUseCase');
+jest.mock('../../src/application/usecases/auth/whoami-use-case');
 
 describe('Auth Controller - whoami', () => {
     let mockRequest: Partial<Request>;

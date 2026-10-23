@@ -1,13 +1,16 @@
 import { Router } from 'express';
 import AuthController from './auth.controller';
 import authMiddleware from './auth.middleware';
+import { validate } from '../middlewares/validation.middleware';
+import { authLimiter } from '../middlewares/rate-limit.middleware';
+import { registerSchema, loginSchema } from './auth.schemas';
 
 const createAuthRoutes = (authController: AuthController): Router => {
     const router = Router();
 
-    router.post('/register', authController.register);
+    router.post('/register', validate(registerSchema), authController.register);
 
-    router.post('/login', authController.login);
+    router.post('/login', authLimiter, validate(loginSchema), authController.login);
 
     // We need to cast authController.whoami to expected handler type because of the custom Request interface
     // or just depend on Express's loose typing compatibility.

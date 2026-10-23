@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import UpdateUserNameUseCase from '../../application/usecases/user/UpdateUserNameUseCase';
-import RequestEmailUpdateUseCase from '../../application/usecases/user/RequestEmailUpdateUseCase';
-import ConfirmEmailUpdateUseCase from '../../application/usecases/user/ConfirmEmailUpdateUseCase';
-import UpdatePasswordUseCase from '../../application/usecases/user/UpdatePasswordUseCase';
+import UpdateUserNameUseCase from '../../application/usecases/user/update-user-name-use-case';
+import RequestEmailUpdateUseCase from '../../application/usecases/user/request-email-update-use-case';
+import ConfirmEmailUpdateUseCase from '../../application/usecases/user/confirm-email-update-use-case';
+import UpdatePasswordUseCase from '../../application/usecases/user/update-password-use-case';
 
 export default class UserController {
     private updateUserNameUseCase: UpdateUserNameUseCase;

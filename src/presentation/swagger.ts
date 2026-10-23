@@ -11,13 +11,13 @@ const options: swaggerJsdoc.Options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'DDD Blog API',
+            title: 'Personal Manager API',
             version: '1.0.0',
             description:
-                'A blog application API built with Node.js following Domain-Driven Design (DDD) principles.',
+                'A personal manager application API built with Node.js following Domain-Driven Design (DDD) principles.',
             contact: {
                 name: 'API Support',
-                email: 'support@ddd-blog.com',
+                email: 'support@personal-manager.com',
             },
             license: {
                 name: 'MIT',
@@ -47,31 +47,39 @@ const options: swaggerJsdoc.Options = {
                         email: { type: 'string', format: 'email', description: 'User email' },
                     },
                 },
-                Post: {
+                Task: {
                     type: 'object',
                     properties: {
-                        id: { type: 'string', description: 'Post ID' },
-                        title: { type: 'string', description: 'Post title' },
-                        content: { type: 'string', description: 'Post content' },
+                        id: { type: 'string', description: 'Task ID' },
+                        title: { type: 'string', description: 'Task title' },
+                        description: { type: 'string', description: 'Task description' },
+                        isCompleted: { type: 'boolean', description: 'Completion status' },
                         tags: {
                             type: 'array',
                             items: { type: 'string' },
-                            description: 'Post tags',
+                            description: 'Task tags',
                         },
                         authorId: { type: 'string', description: 'Author user ID' },
                         createdAt: { type: 'string', format: 'date-time' },
                         updatedAt: { type: 'string', format: 'date-time' },
                     },
                 },
-                Error: {
+                ErrorResponse: {
                     type: 'object',
                     properties: {
                         success: { type: 'boolean', example: false },
                         error: {
                             type: 'object',
                             properties: {
-                                code: { type: 'string' },
-                                message: { type: 'string' },
+                                code: { type: 'string', example: 'NOT_FOUND' },
+                                message: { type: 'string', example: 'Resource not found' },
+                                statusCode: { type: 'integer', example: 404 },
+                                timestamp: { type: 'string', format: 'date-time' },
+                                fields: {
+                                    type: 'object',
+                                    description: 'Optional validation fields',
+                                    additionalProperties: { type: 'string' },
+                                },
                             },
                         },
                     },
@@ -107,19 +115,20 @@ const options: swaggerJsdoc.Options = {
                         },
                     },
                 },
-                CreatePostRequest: {
+                CreateTaskRequest: {
                     type: 'object',
-                    required: ['title', 'content'],
+                    required: ['title'],
                     properties: {
-                        title: { type: 'string', example: 'My First Post' },
-                        content: {
+                        title: { type: 'string', example: 'Buy groceries' },
+                        description: {
                             type: 'string',
-                            example: 'This is the content of my first post.',
+                            example: 'Milk, Eggs, Bread',
                         },
+                        isCompleted: { type: 'boolean', example: false },
                         tags: {
                             type: 'array',
                             items: { type: 'string' },
-                            example: ['nodejs', 'ddd'],
+                            example: ['home', 'shopping'],
                         },
                     },
                 },
@@ -128,7 +137,7 @@ const options: swaggerJsdoc.Options = {
         tags: [
             { name: 'Auth', description: 'Authentication endpoints' },
             { name: 'Users', description: 'User management endpoints' },
-            { name: 'Posts', description: 'Blog post endpoints' },
+            { name: 'Tasks', description: 'Task management endpoints' },
             { name: 'Health', description: 'Health check endpoints' },
         ],
     },
@@ -153,7 +162,7 @@ const setupSwagger = (app: Application): void => {
         swaggerUi.serve,
         swaggerUi.setup(specs, {
             explorer: true,
-            customSiteTitle: 'DDD Blog API Documentation',
+            customSiteTitle: 'Personal Manager API Documentation',
         })
     );
 

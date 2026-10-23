@@ -2,12 +2,16 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './infrastructure/database/mongodb';
+import helmet from 'helmet';
+import compression from 'compression';
+import { globalLimiter } from './presentation/middlewares/rate-limit.middleware';
+import morganMiddleware from './infrastructure/logger/morgan.middleware';
 
 // Import Swagger configuration
 import { setupSwagger } from './presentation/swagger';
 
 // Import error handler
-import errorHandler from './presentation/middlewares/errorHandler';
+import errorHandler from './presentation/middlewares/error-handler';
 
 // Import DI container
 import container from './shared/container';
@@ -15,34 +19,34 @@ import container from './shared/container';
 // Import concrete implementations
 import ConcreteUserRepository from './infrastructure/user/user.repository';
 import ConcreteEmailService from './infrastructure/services/email.service';
-import ConcretePostRepository from './infrastructure/post/post.repository';
+import ConcreteTaskRepository from './infrastructure/task/task.repository';
 
 // Import User Use Cases
-import UpdateUserNameUseCase from './application/usecases/user/UpdateUserNameUseCase';
-import RequestEmailUpdateUseCase from './application/usecases/user/RequestEmailUpdateUseCase';
-import ConfirmEmailUpdateUseCase from './application/usecases/user/ConfirmEmailUpdateUseCase';
-import UpdatePasswordUseCase from './application/usecases/user/UpdatePasswordUseCase';
+import UpdateUserNameUseCase from './application/usecases/user/update-user-name-use-case';
+import RequestEmailUpdateUseCase from './application/usecases/user/request-email-update-use-case';
+import ConfirmEmailUpdateUseCase from './application/usecases/user/confirm-email-update-use-case';
+import UpdatePasswordUseCase from './application/usecases/user/update-password-use-case';
 
 // Import Auth Use Cases
-import RegisterUserUseCase from './application/usecases/auth/RegisterUserUseCase';
-import LoginUserUseCase from './application/usecases/auth/LoginUserUseCase';
-import WhoamiUseCase from './application/usecases/auth/WhoamiUseCase';
+import RegisterUserUseCase from './application/usecases/auth/register-user-use-case';
+import LoginUserUseCase from './application/usecases/auth/login-user-use-case';
+import WhoamiUseCase from './application/usecases/auth/whoami-use-case';
 
-// Import Post Use Cases
-import CreatePostUseCase from './application/usecases/post/CreatePostUseCase';
-import GetPostByIdUseCase from './application/usecases/post/GetPostByIdUseCase';
-import GetAllPostsUseCase from './application/usecases/post/GetAllPostsUseCase';
-import UpdatePostUseCase from './application/usecases/post/UpdatePostUseCase';
-import DeletePostUseCase from './application/usecases/post/DeletePostUseCase';
+// Import Task Use Cases
+import CreateTaskUseCase from './application/usecases/task/create-task-use-case';
+import GetTaskByIdUseCase from './application/usecases/task/get-task-by-id-use-case';
+import GetAllTasksUseCase from './application/usecases/task/get-all-tasks-use-case';
+import UpdateTaskUseCase from './application/usecases/task/update-task-use-case';
+import DeleteTaskUseCase from './application/usecases/task/delete-task-use-case';
 
 // Import Controllers
 import UserController from './presentation/user/user.controller';
 import AuthController from './presentation/auth/auth.controller';
-import PostController from './presentation/post/post.controller';
+import TaskController from './presentation/task/task.controller';
 
 // Import Routes
 import createAuthRoutes from './presentation/auth/auth.routes';
-import createPostRoutes from './presentation/post/post.routes';
+import createTaskRoutes from './presentation/task/task.routes';
 import createUserRoutes from './presentation/user/user.routes';
 
 dotenv.config({ path: './.env.local' });
@@ -53,8 +57,12 @@ const app: Express = express();
 // connectDB(); // Moved to server.ts
 
 // Middleware
+app.use(helmet());
+app.use(compression());
 app.use(cors());
 app.use(express.json());
+app.use(morganMiddleware);
+app.use('/api', globalLimiter);
 
 // Setup Swagger Documentation
 setupSwagger(app);
@@ -99,7 +107,7 @@ container.registerSingleton('emailService', () => {
     };
     return new ConcreteEmailService(emailConfig);
 });
-container.registerSingleton('postRepository', () => new ConcretePostRepository());
+container.registerSingleton('taskRepository', () => new ConcreteTaskRepository());
 
 // Register User Use Cases
 container.register(
@@ -127,18 +135,18 @@ container.register(
 container.register('loginUserUseCase', (c) => new LoginUserUseCase(c.resolve('userRepository')));
 container.register('whoamiUseCase', (c) => new WhoamiUseCase(c.resolve('userRepository')));
 
-// Register Post Use Cases
-container.register('createPostUseCase', (c) => new CreatePostUseCase(c.resolve('postRepository')));
+// Register Task Use Cases
+container.register('createTaskUseCase', (c) => new CreateTaskUseCase(c.resolve('taskRepository')));
 container.register(
-    'getPostByIdUseCase',
-    (c) => new GetPostByIdUseCase(c.resolve('postRepository'))
+    'getTaskByIdUseCase',
+    (c) => new GetTaskByIdUseCase(c.resolve('taskRepository'))
 );
 container.register(
-    'getAllPostsUseCase',
-    (c) => new GetAllPostsUseCase(c.resolve('postRepository'))
+    'getAllTasksUseCase',
+    (c) => new GetAllTasksUseCase(c.resolve('taskRepository'))
 );
-container.register('updatePostUseCase', (c) => new UpdatePostUseCase(c.resolve('postRepository')));
-container.register('deletePostUseCase', (c) => new DeletePostUseCase(c.resolve('postRepository')));
+container.register('updateTaskUseCase', (c) => new UpdateTaskUseCase(c.resolve('taskRepository')));
+container.register('deleteTaskUseCase', (c) => new DeleteTaskUseCase(c.resolve('taskRepository')));
 
 // Register controllers
 container.register(
@@ -163,20 +171,20 @@ container.register(
 );
 
 container.register(
-    'postController',
+    'taskController',
     (c) =>
-        new PostController(
-            c.resolve('createPostUseCase'),
-            c.resolve('getPostByIdUseCase'),
-            c.resolve('getAllPostsUseCase'),
-            c.resolve('updatePostUseCase'),
-            c.resolve('deletePostUseCase')
+        new TaskController(
+            c.resolve('createTaskUseCase'),
+            c.resolve('getTaskByIdUseCase'),
+            c.resolve('getAllTasksUseCase'),
+            c.resolve('updateTaskUseCase'),
+            c.resolve('deleteTaskUseCase')
         )
 );
 
 // Define Routes
 app.use('/api/auth', createAuthRoutes(container.resolve('authController')));
-app.use('/api/posts', createPostRoutes(container.resolve('postController')));
+app.use('/api/tasks', createTaskRoutes(container.resolve('taskController')));
 app.use('/api/users', createUserRoutes(container.resolve('userController')));
 
 // 404 handler for undefined routes

@@ -3,27 +3,27 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        container_name: ddd-blog-app
+        container_name: com-node-app
         ports:
             - '3000:3000'
         environment:
             - NODE_ENV=production
             - PORT=3000
-            - MONGO_URI=mongodb://root:rootpassword@mongodb:27017/ddd-blog?authSource=admin
-            - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_here}
+            - MONGO_URI=mongodb://root:rootpassword@mongodb:27017/com-node-app?authSource=admin
+            - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set}
             - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1d}
-            - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET:-your_refresh_token_secret}
+            - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET:?REFRESH_TOKEN_SECRET must be set}
             - REFRESH_TOKEN_EXPIRES_IN=${REFRESH_TOKEN_EXPIRES_IN:-7d}
         depends_on:
             mongodb:
                 condition: service_healthy
         networks:
-            - ddd-blog-network
+            - com-node-app-network
         restart: unless-stopped
 
     mongodb:
         image: mongo:latest
-        container_name: ddd-blog-mongodb
+        container_name: com-node-app-mongodb
         ports:
             - '27017:27017'
         volumes:
@@ -31,7 +31,7 @@ services:
         environment:
             MONGO_INITDB_ROOT_USERNAME: root
             MONGO_INITDB_ROOT_PASSWORD: rootpassword
-            MONGO_INITDB_DATABASE: ddd-blog
+            MONGO_INITDB_DATABASE: com-node-app
         healthcheck:
             test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
             interval: 10s
@@ -39,12 +39,12 @@ services:
             retries: 5
             start_period: 10s
         networks:
-            - ddd-blog-network
+            - com-node-app-network
         restart: unless-stopped
 
 volumes:
     mongodb_data:
 
 networks:
-    ddd-blog-network:
+    com-node-app-network:
         driver: bridge
