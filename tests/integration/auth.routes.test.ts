@@ -66,7 +66,9 @@ jest.mock('../../src/presentation/auth/auth.middleware', () => {
 
 describe('Auth Routes', () => {
     beforeAll(async () => {
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/com-node-app-test');
+        await mongoose.connect(
+            process.env.MONGO_URI || 'mongodb://localhost:27017/com-node-app-test'
+        );
         await UserModel.deleteMany({});
         testUserForAuthMiddleware = await UserModel.create({
             name: 'Auth Middleware User',
